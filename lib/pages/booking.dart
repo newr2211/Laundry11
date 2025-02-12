@@ -1,267 +1,242 @@
 import 'package:flutter/material.dart';
-import 'package:Laundry/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'BookingHistory.dart';
 
 class Booking extends StatefulWidget {
-  String service, price;
-  Booking({super.key, required this.service, required this.price});
+  final String service, price;
+  final List<String> selectedServices;
+
+  Booking({
+    super.key,
+    required this.service,
+    required this.price,
+    required this.selectedServices,
+  });
 
   @override
   State<Booking> createState() => _BookingState();
 }
 
 class _BookingState extends State<Booking> {
-  String? name, image, email;
-
-  getthedatafromsharedpref() async {
-    // name = await SharedpreferenceHelper().getUserName();
-    // image = await SharedpreferenceHelper().getUserImage();
-    // email = await SharedpreferenceHelper().getUserEmail();
-    setState(() {});
-  }
-
-  getontheload() async {
-    await getthedatafromsharedpref();
-    setState(() {});
-  }
+  String? name, email;
+  bool isLoading = true;
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
 
   @override
   void initState() {
-    getontheload();
     super.initState();
+    getUserData();
   }
 
-  DateTime _selectedDate = DateTime.now();
-
-  // ฟังก์ชันแก้ไข: _selectDate ให้เหมือนกับ _selectTime
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != _selectedDate) {
+  // ฟังก์ชันดึงข้อมูลผู้ใช้จาก Firebase และบันทึกข้อมูลผู้ใช้หากล็อกอินครั้งแรก
+  Future<void> getUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
       setState(() {
-        _selectedDate = picked; // อัพเดตวันที่ที่เลือก
+        isLoading = false;
+      });
+      return;
+    }
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+      if (!userDoc.exists) {
+        // ถ้าผู้ใช้ยังไม่มีข้อมูลใน Firestore ให้สร้างข้อมูลใหม่
+        await FirebaseFirestore.instance.collection('Users').doc(user.uid).set({
+          'Name': user.displayName ?? 'ไม่ระบุชื่อ',
+          'Email': user.email ?? 'ไม่ระบุอีเมล',
+        });
+      }
+      setState(() {
+        name = user.displayName ?? 'ไม่ระบุชื่อ';
+        email = user.email ?? 'ไม่ระบุอีเมล';
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
       });
     }
   }
 
-  TimeOfDay _selectedTime = TimeOfDay.now();
-
+  // ฟังก์ชันสำหรับเลือกเวลา
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked =
         await showTimePicker(context: context, initialTime: _selectedTime);
-    if (picked != null && picked != _selectedTime) {
+    if (picked != null) {
       setState(() {
-        _selectedTime = picked; // อัพเดตเวลาเมื่อเลือก
+        _selectedTime = picked;
       });
     }
+  }
+
+  // ฟังก์ชันการจองบริการ
+  Future<void> _bookService() async {
+    if (name == null || email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("ไม่สามารถจองได้ กรุณาล็อกอินก่อน"),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    Map<String, dynamic> userBookingMap = {
+      "Service": widget.service,
+      "Price": widget.price,
+      "Date": _selectedDate.toString().split(' ')[0],
+      "Time": _selectedTime.format(context),
+      "Username": name,
+      "Email": email,
+    };
+
+    await FirebaseFirestore.instance
+        .collection("Bookings")
+        .add(userBookingMap)
+        .then((value) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("จองบริการสำเร็จ!"),
+        backgroundColor: Colors.green,
+      ));
+
+      // นำทางไปยังหน้า BookingHistory หลังจากจองเสร็จ
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => BookingHistory()),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("เกิดข้อผิดพลาดในการจอง: $error"),
+        backgroundColor: Colors.red,
+      ));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue,
-      body: Container(
-        margin: EdgeInsets.symmetric(horizontal: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(top: 50.0),
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
-              ),
-            ),
-            SizedBox(height: 30.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "เลือกบริการ:",
-                  style: TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  widget.service,
-                  style: TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "ราคา:",
-                  style: TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  widget.price,
-                  style: TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.0),
-            Container(
-              padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-              decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(20)),
-              width: MediaQuery.of(context).size.width,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+              margin: EdgeInsets.symmetric(horizontal: 10.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "กรุณาเลือกวันที่",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
                   GestureDetector(
-                    onTap: () {
-                      _selectDate(context); // เรียก _selectDate เมื่อกดที่นี่
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.calendar_month,
-                          color: Colors.white,
-                          size: 30.0,
-                        ),
-                        SizedBox(
-                          width: 20.0,
-                        ),
-                        Text(
-                          "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    onTap: () => Navigator.pop(context),
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 50.0),
+                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 30.0),
                     ),
-                  )
+                  ),
+                  SizedBox(height: 30.0),
+                  _buildDatePicker(),
+                  SizedBox(height: 20.0),
+                  _buildTimePicker(),
+                  SizedBox(height: 40.0),
+                  _buildBookButton()
                 ],
               ),
             ),
-            SizedBox(height: 20.0),
-            Container(
-              padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-              decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(20)),
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                children: [
-                  Text(
-                    "กรุณาเลือกเวลา",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      _selectTime(context); // เรียก _selectTime เมื่อกดที่นี่
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.alarm,
-                          color: Colors.white,
-                          size: 30.0,
-                        ),
-                        SizedBox(
-                          width: 20.0,
-                        ),
-                        Text(
-                          _selectedTime.format(context),
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+    );
+  }
+
+  // ฟังก์ชันสำหรับเลือกวันที่
+  Widget _buildDatePicker() {
+    return Container(
+      padding: EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+          color: Colors.orange, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Text("กรุณาเลือกวันที่",
+              style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
+          Text(_selectedDate.toString().split(' ')[0],
+              style: TextStyle(
+                  fontSize: 30.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
+          TableCalendar(
+            availableGestures: AvailableGestures.all,
+            focusedDay: _selectedDate,
+            firstDay: DateTime.utc(2025, 01, 01),
+            lastDay: DateTime.utc(2030, 01, 01),
+            selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
+            onDaySelected: (day, _) {
+              setState(() {
+                _selectedDate = day;
+              });
+            },
+            calendarStyle: CalendarStyle(
+              selectedDecoration:
+                  BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+              todayDecoration:
+                  BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
             ),
-            SizedBox(
-              height: 40.0,
-            ),
-            GestureDetector(
-              onTap: () async {
-                Map<String, dynamic> userBookingmap = {
-                  "Service": widget.service,
-                  "Date":
-                      "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}"
-                          .toString(),
-                  "Time": _selectedTime.format(context).toString(),
-                  "Username": name,
-                  "Image": image,
-                  "Email": email,
-                };
-                await DatabaseMethods()
-                    .addUserBooking(userBookingmap)
-                    .then((value) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                    "Service has been booked Successfully!!!",
-                    style: TextStyle(fontSize: 20.0),
-                  )));
-                });
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Text(
-                    "จองเลย !",
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ฟังก์ชันสำหรับเลือกเวลา
+  Widget _buildTimePicker() {
+    return Container(
+      padding: EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+          color: Colors.orange, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Text("กรุณาเลือกเวลา",
+              style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
+          GestureDetector(
+            onTap: () => _selectTime(context),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.alarm, color: Colors.white, size: 30.0),
+                SizedBox(width: 20.0),
+                Text(_selectedTime.format(context),
                     style: TextStyle(
-                        fontSize: 22.0,
+                        fontSize: 30.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                ),
-              ),
-            )
-          ],
+                        color: Colors.white)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ฟังก์ชันปุ่มจอง
+  Widget _buildBookButton() {
+    return GestureDetector(
+      onTap: _bookService,
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height / 14,
+        padding: EdgeInsets.symmetric(vertical: 15.0),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        child: Center(
+          child: Text("จองเลย !",
+              style: TextStyle(
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black)),
         ),
       ),
     );

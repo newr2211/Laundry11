@@ -2,8 +2,8 @@ import 'package:Laundry/pages/home.dart';
 import 'package:Laundry/pages/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
 import 'package:Laundry/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -18,58 +18,69 @@ class _SignUpState extends State<SignUp> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  //TextEditingController telephoneController = TextEditingController();
 
   registration() async {
     if (password != null &&
         nameController.text != "" &&
         emailController.text != "") {
       try {
+        // สมัครผู้ใช้ด้วยอีเมลและรหัสผ่าน
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
-        String id = randomAlphaNumeric(10);
-        Map<String, dynamic> userInfoMap = {
-          "Id": id,
-          "Name": nameController.text,
-          "Email": emailController.text,
-          //"Telephone": telephoneController.text,
-          // "Name": nameController.text,
-        };
-        await DatabaseMethods().addUserDetails(userInfoMap, id);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.green,
-            content: Text(
-              "Registered Successfully!",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20.0,
-              ),
-            )));
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Home()));
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'weak-password') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.orangeAccent,
+
+        // เอา UID ของผู้ใช้ที่สมัคร
+        String? id = userCredential.user?.uid;
+
+        // ถ้าผู้ใช้สมัครสำเร็จ
+        if (id != null) {
+          // สร้าง Map ของข้อมูลผู้ใช้
+          Map<String, dynamic> userInfoMap = {
+            "Id": id,
+            "Name": nameController.text,
+            "Email": emailController.text,
+            // ถ้าต้องการบันทึกข้อมูลเพิ่มเติม เช่น หมายเลขโทรศัพท์
+            // "Telephone": telephoneController.text,
+          };
+
+          // บันทึกข้อมูลผู้ใช้ลงใน Firestore
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .doc(id)
+              .set(userInfoMap);
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.green,
               content: Text(
-                "Password Provided is too Weak",
-                style: TextStyle(fontSize: 18.0),
-              ),
-            ),
-          );
-        } else if (e.code == 'email-already-in-use') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.orangeAccent,
-              content: Text(
-                "Account Already exists",
-                style: TextStyle(fontSize: 18.0),
-              ),
-            ),
-          );
+                "Registered Successfully!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                ),
+              )));
+
+          // นำผู้ใช้ไปยังหน้า Home
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => Home()));
         }
+      } on FirebaseAuthException catch (e) {
+        String message = '';
+        if (e.code == 'weak-password') {
+          message = "Password Provided is too Weak";
+        } else if (e.code == 'email-already-in-use') {
+          message = "Account Already exists";
+        } else {
+          message = "Error: ${e.message}"; // แสดงข้อความผิดพลาดจาก Firebase
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.orangeAccent,
+            content: Text(
+              message,
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ),
+        );
       }
     }
   }
@@ -109,7 +120,6 @@ class _SignUpState extends State<SignUp> {
                     topLeft: Radius.circular(40),
                     topRight: Radius.circular(40))),
             child: Form(
-              // key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

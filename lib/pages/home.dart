@@ -1,7 +1,9 @@
+import 'package:Laundry/pages/detail.dart';
 import 'package:Laundry/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:Laundry/pages/booking.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,12 +13,53 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String userName = "User";
+  bool isLoading = true;
+  List<String> selectedServices = []; // เก็บบริการที่เลือก
+  List<String> selectedPrices = []; // เก็บราคาของบริการที่เลือก
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LogIn()),
+      );
+      return;
+    }
+
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists && userDoc.data() != null) {
+        setState(() {
+          userName = userDoc['Name'] ?? "User";
+        });
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Future<void> logOut() async {
     try {
       await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LogIn()), // นำไปหน้าล็อกอิน
+        MaterialPageRoute(builder: (context) => LogIn()),
       );
     } catch (e) {
       print('Error during sign out: $e');
@@ -27,163 +70,199 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue,
-      body: Container(
-        margin: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Welcome,",
-                      style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 24.0,
-                        fontWeight: FontWeight.w500,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator(color: Colors.white))
+          : Container(
+              margin: EdgeInsets.only(top: 70.0, left: 20.0, right: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Welcome,",
+                            style: TextStyle(
+                              color: Colors.yellow,
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            userName,
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 212, 181, 43),
+                              fontSize: 48.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      "User",
-                      style: TextStyle(
-                        color: const Color.fromARGB(255, 212, 181, 43),
-                        fontSize: 24.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                // ปุ่มล็อกเอ้าท์
-                GestureDetector(
-                  onTap: logOut,
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
-                    decoration: BoxDecoration(
-                      color: Colors.red, // สีปุ่ม
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Icon(Icons.logout),
+                      GestureDetector(
+                        onTap: logOut,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 15.0),
+                          child: Center(
+                            child:
+                                Icon(Icons.logout, color: Colors.red, size: 40),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 5.0),
+                  Divider(color: Colors.black, thickness: 2.0),
+                  SizedBox(height: 5.0),
+                  Text(
+                    "บริการ",
+                    style: TextStyle(
+                      color: Colors.yellow,
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Divider(),
-            SizedBox(
-              height: 20.0,
-            ),
-            Text(
-              "บริการ",
-              style: TextStyle(
-                color: Colors.yellow,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
+                  SizedBox(height: 5.0),
+                  ServiceTile(
+                      service: 'ซักเสื้อผ้าทั่วไป',
+                      price: '300฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ServiceTile(
+                      service: 'ซักผ้าปูที่นอน,ฝูก',
+                      price: '1000฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ServiceTile(
+                      service: 'ซักชุดนักเรียน,สูท',
+                      price: '400฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ServiceTile(
+                      service: 'ซักผ้าม่าน',
+                      price: '500฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ServiceTile(
+                      service: 'ซักรองเท้า',
+                      price: '150฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ServiceTile(
+                      service: 'ซักรองเท้าหนัง',
+                      price: '500฿',
+                      imagePath: 'images/logo.png',
+                      imageSize: 50,
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Detail(
+                            selectedServices: selectedServices,
+                            selectedPrices: selectedPrices,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Center(child: Text("ไปยังรายการ")),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              children: [
-                _service(service: 'ซักเสื้อผ้าทั่วไป', price: '300฿'),
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              children: [
-                _service(service: 'ซักผ้าปูที่นอน,ฝูก', price: '1000฿'),
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              children: [
-                _service(service: 'ซักชุดนักเรียน,สูท', price: '400฿'),
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              children: [
-                _service(service: 'ซักผ้าม่าน', price: '500฿'),
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              children: [
-                _service(service: 'ซักรองเท้า', price: '150฿'),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
 
-class _service extends StatefulWidget {
-  String service, price;
-  _service({super.key, required this.service, required this.price});
+class ServiceTile extends StatefulWidget {
+  final String service, price, imagePath;
+  final double imageSize;
+  final List<String> selectedServices;
+  final List<String> selectedPrices;
+
+  const ServiceTile({
+    super.key,
+    required this.service,
+    required this.price,
+    required this.imagePath,
+    this.imageSize = 40,
+    required this.selectedServices,
+    required this.selectedPrices,
+  });
 
   @override
-  State<_service> createState() => _serviceState();
+  _ServiceTileState createState() => _ServiceTileState();
 }
 
-class _serviceState extends State<_service> {
+class _ServiceTileState extends State<ServiceTile> {
+  bool isSelected = false;
+
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      fit: FlexFit.tight,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => Booking(
-                        service: widget.service,
-                        price: widget.price,
-                      )));
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.orange, borderRadius: BorderRadius.circular(10)),
-          height: 100.0,
-          // width: 120.0,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                widget.service,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
-                ),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isSelected = !isSelected;
+          if (isSelected) {
+            widget.selectedServices.add(widget.service);
+            widget.selectedPrices.add(widget.price);
+          } else {
+            widget.selectedServices.remove(widget.service);
+            widget.selectedPrices.remove(widget.price);
+          }
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 6.0),
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height / 12, // ขนาดกล่องเล็กลง
+        decoration: BoxDecoration(
+            color: isSelected ? Colors.green : Colors.orange,
+            borderRadius: BorderRadius.circular(10)),
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // รูปภาพอยู่ทางซ้าย
+            Image.asset(widget.imagePath, height: widget.imageSize),
+            SizedBox(width: 10.0), // ช่องว่างระหว่างรูปและข้อความ
+            // ข้อความบริการอยู่ด้านขวา
+            Text(
+              widget.service,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
               ),
-              Text(
+            ),
+            Spacer(), // ช่วยให้ราคาอยู่ล่างกลาง
+            Container(
+              padding: EdgeInsets.only(right: 20),
+              child: Text(
                 widget.price,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 22.0,
+                  fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

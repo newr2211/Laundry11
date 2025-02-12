@@ -35,6 +35,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  numberpicker: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -43,7 +44,8 @@ dev_dependencies:
   firebase_core:
   cloud_firestore:
   firebase_auth:
-  random_string:
+  table_calendar: ^3.2.0
+#  random_string:
 #  shared_preferences:
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -94,3 +96,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+

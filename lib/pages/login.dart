@@ -12,7 +12,6 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogInState extends State<LogIn> {
-  String? mail, password;
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
 
@@ -20,11 +19,14 @@ class _LogInState extends State<LogIn> {
 
   userLogin() async {
     try {
+      String mail = emailcontroller.text;
+      String password = passwordcontroller.text;
+
       // ทำการล็อกอินด้วยอีเมล์และรหัสผ่าน
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: mail!,
-        password: password!,
+        email: mail,
+        password: password,
       );
 
       // หากล็อกอินสำเร็จ ให้ทำการนำทางไปยังหน้า Home
@@ -175,10 +177,6 @@ class _LogInState extends State<LogIn> {
                     GestureDetector(
                       onTap: () {
                         if (_formkey.currentState!.validate()) {
-                          setState(() {
-                            mail = emailcontroller.text;
-                            password = passwordcontroller.text;
-                          });
                           userLogin();
                         }
                       },
