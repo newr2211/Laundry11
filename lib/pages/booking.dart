@@ -5,14 +5,15 @@ import 'package:table_calendar/table_calendar.dart';
 import 'BookingHistory.dart';
 
 class Booking extends StatefulWidget {
-  final String service, price;
   final List<String> selectedServices;
+  final List<String> selectedPrices;
 
   Booking({
     super.key,
-    required this.service,
-    required this.price,
     required this.selectedServices,
+    required this.selectedPrices,
+    required String service,
+    required String price,
   });
 
   @override
@@ -31,7 +32,7 @@ class _BookingState extends State<Booking> {
     getUserData();
   }
 
-  // ฟังก์ชันดึงข้อมูลผู้ใช้จาก Firebase และบันทึกข้อมูลผู้ใช้หากล็อกอินครั้งแรก
+  // ฟังก์ชันดึงข้อมูลผู้ใช้จาก Firebase
   Future<void> getUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -86,8 +87,8 @@ class _BookingState extends State<Booking> {
     }
 
     Map<String, dynamic> userBookingMap = {
-      "Service": widget.service,
-      "Price": widget.price,
+      "Services": widget.selectedServices,
+      "Prices": widget.selectedPrices,
       "Date": _selectedDate.toString().split(' ')[0],
       "Time": _selectedTime.format(context),
       "Username": name,
@@ -140,7 +141,9 @@ class _BookingState extends State<Booking> {
                   SizedBox(height: 20.0),
                   _buildTimePicker(),
                   SizedBox(height: 40.0),
-                  _buildBookButton()
+                  _buildBookingSummary(), // แสดงข้อมูลการจอง
+                  SizedBox(height: 20.0),
+                  _buildBookButton(),
                 ],
               ),
             ),
@@ -216,6 +219,31 @@ class _BookingState extends State<Booking> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ฟังก์ชันสำหรับแสดงข้อมูลการจอง
+  Widget _buildBookingSummary() {
+    return Container(
+      padding: EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Text("สรุปการจอง:",
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+          ...List.generate(widget.selectedServices.length, (index) {
+            return Text(
+              "${widget.selectedServices[index]} - ${widget.selectedPrices[index]}",
+              style: TextStyle(fontSize: 16.0),
+            );
+          }),
+          Text("วันที่: ${_selectedDate.toString().split(' ')[0]}",
+              style: TextStyle(fontSize: 16.0)),
+          Text("เวลา: ${_selectedTime.format(context)}",
+              style: TextStyle(fontSize: 16.0)),
         ],
       ),
     );

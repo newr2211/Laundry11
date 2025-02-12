@@ -93,6 +93,7 @@ class Detail extends StatelessWidget {
                       service: selectedServices.join(", "),
                       price: selectedPrices.join(", "),
                       selectedServices: selectedServices,
+                      selectedPrices: [],
                     ),
                   ),
                 );
