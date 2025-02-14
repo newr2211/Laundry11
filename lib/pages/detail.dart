@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Laundry/pages/booking.dart';
 import 'package:flutter/material.dart';
 
@@ -11,25 +13,53 @@ class Detail extends StatelessWidget {
     required this.selectedPrices,
   });
 
-  @override
-  Widget build(BuildContext context) {
+  // คำนวณราคาทั้งหมด
+  int calculateTotalPrice() {
     int totalPrice = 0;
     for (var price in selectedPrices) {
       totalPrice += int.tryParse(price.replaceAll('฿', '').trim()) ?? 0;
     }
+    return totalPrice;
+  }
+
+  // ฟังก์ชันเพื่อบันทึกข้อมูลลง Firebase
+  Future<void> saveBookingToFirebase(int totalPrice) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        Map<String, dynamic> bookingData = {
+          'userId': user.uid,
+          'service': selectedServices,
+          'prices': selectedPrices,
+          'totalPrice': totalPrice,
+          'bookingDate': Timestamp.now(),
+        };
+
+        await FirebaseFirestore.instance
+            .collection('Bookings')
+            .add(bookingData);
+        print("Booking saved to Firebase!");
+      }
+    } catch (e) {
+      print("Error saving booking to Firebase: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    int totalPrice = calculateTotalPrice();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "รายละเอียดการจอง",
-          style: TextStyle(color: Colors.yellow), // เปลี่ยนสีเป็นเหลือง
+          style: TextStyle(color: Colors.yellow),
         ),
         backgroundColor: Colors.blue,
-        iconTheme: IconThemeData(
-            color: Colors.yellow), // เปลี่ยนสีไอคอนย้อนกลับเป็นเหลือง
+        iconTheme: IconThemeData(color: Colors.yellow),
       ),
       body: Container(
-        color: Colors.blue, // เปลี่ยนพื้นหลังเป็นสีฟ้า
+        color: Colors.blue,
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +67,7 @@ class Detail extends StatelessWidget {
             Text(
               "บริการที่เลือก",
               style: TextStyle(
-                color: Colors.yellow, // เปลี่ยนสีเป็นเหลือง
+                color: Colors.yellow,
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
@@ -91,14 +121,18 @@ class Detail extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => Booking(
                       service: selectedServices.join(", "),
-                      price: selectedPrices.join(", "),
+                      price: "$totalPrice฿",
                       selectedServices: selectedServices,
-                      selectedPrices: [],
+                      selectedPrices: selectedPrices,
                     ),
                   ),
                 );
               },
               child: Center(child: Text("เลือกเวลาการจอง")),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+              ),
             ),
           ],
         ),

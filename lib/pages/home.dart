@@ -66,6 +66,10 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void updateSelection() {
+    setState(() {}); // อัปเดต UI ทันที
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +88,7 @@ class _HomeState extends State<Home> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Welcome,",
+                            "Welcome",
                             style: TextStyle(
                               color: Colors.yellow,
                               fontSize: 24.0,
@@ -130,56 +134,63 @@ class _HomeState extends State<Home> {
                       service: 'ซักเสื้อผ้าทั่วไป',
                       price: '300฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ServiceTile(
                       service: 'ซักผ้าปูที่นอน,ฝูก',
                       price: '1000฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ServiceTile(
                       service: 'ซักชุดนักเรียน,สูท',
                       price: '400฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ServiceTile(
                       service: 'ซักผ้าม่าน',
                       price: '500฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ServiceTile(
                       service: 'ซักรองเท้า',
                       price: '150฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ServiceTile(
                       service: 'ซักรองเท้าหนัง',
                       price: '500฿',
                       imagePath: 'images/logo.png',
-                      imageSize: 50,
+                      updateParent: updateSelection,
                       selectedServices: selectedServices,
                       selectedPrices: selectedPrices),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Detail(
-                            selectedServices: selectedServices,
-                            selectedPrices: selectedPrices,
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: selectedServices.isNotEmpty
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Detail(
+                                  selectedServices: selectedServices,
+                                  selectedPrices: selectedPrices,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedServices.isNotEmpty
+                          ? Colors.orange
+                          : Colors.grey,
+                    ),
                     child: Center(child: Text("ไปยังรายการ")),
                   ),
                 ],
@@ -191,7 +202,7 @@ class _HomeState extends State<Home> {
 
 class ServiceTile extends StatefulWidget {
   final String service, price, imagePath;
-  final double imageSize;
+  final Function updateParent;
   final List<String> selectedServices;
   final List<String> selectedPrices;
 
@@ -200,7 +211,7 @@ class ServiceTile extends StatefulWidget {
     required this.service,
     required this.price,
     required this.imagePath,
-    this.imageSize = 40,
+    required this.updateParent,
     required this.selectedServices,
     required this.selectedPrices,
   });
@@ -226,11 +237,10 @@ class _ServiceTileState extends State<ServiceTile> {
             widget.selectedPrices.remove(widget.price);
           }
         });
+        widget.updateParent(); // แจ้งให้ Home อัปเดต UI
       },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 6.0),
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height / 12, // ขนาดกล่องเล็กลง
         decoration: BoxDecoration(
             color: isSelected ? Colors.green : Colors.orange,
             borderRadius: BorderRadius.circular(10)),
@@ -238,10 +248,7 @@ class _ServiceTileState extends State<ServiceTile> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // รูปภาพอยู่ทางซ้าย
-            Image.asset(widget.imagePath, height: widget.imageSize),
-            SizedBox(width: 10.0), // ช่องว่างระหว่างรูปและข้อความ
-            // ข้อความบริการอยู่ด้านขวา
+            Image.asset(widget.imagePath, height: 50),
             Text(
               widget.service,
               style: TextStyle(
@@ -250,16 +257,12 @@ class _ServiceTileState extends State<ServiceTile> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Spacer(), // ช่วยให้ราคาอยู่ล่างกลาง
-            Container(
-              padding: EdgeInsets.only(right: 20),
-              child: Text(
-                widget.price,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                ),
+            Text(
+              widget.price,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
