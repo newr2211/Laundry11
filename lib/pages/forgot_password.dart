@@ -45,68 +45,70 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.blue,
-      body: Container(
+      backgroundColor: Colors.blue[50],
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 70.0,
-            ),
-            Container(
-              alignment: Alignment.topCenter,
-              child: Text(
-                "Password Recovery",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30.0,
-                    fontWeight: FontWeight.bold),
+            Text(
+              "แก้ไขรหัสผ่าน",
+              style: TextStyle(
+                color: Colors.blue[700],
+                fontSize: 30.0,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(
-              height: 10.0,
-            ),
+            const SizedBox(height: 20.0),
             Text(
-              "Enter your mail",
+              "ป้อน Email ของคุณ",
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold),
+                color: Colors.blue[700],
+                fontSize: 18.0,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            SizedBox(
-              height: 30.0,
-            ),
+            const SizedBox(height: 40.0),
             Form(
               key: _formkey,
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0),
-                padding: EdgeInsets.only(left: 10.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white70, width: 2.0),
-                    borderRadius: BorderRadius.circular(30)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 2),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
                 child: TextFormField(
                   controller: mailcontroller,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please Enter Email';
+                      return 'กรุณากรอกอีเมล';
                     }
                     return null;
                   },
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "Email",
-                      hintStyle: TextStyle(fontSize: 18.0, color: Colors.white),
-                      prefixIcon: Icon(
-                        Icons.mail_outline,
-                        color: Colors.white60,
-                        size: 30.0,
-                      )),
+                    border: InputBorder.none,
+                    hintText: "Email",
+                    hintStyle: const TextStyle(fontSize: 18.0),
+                    prefixIcon: const Icon(
+                      Icons.mail_outline,
+                      color: Colors.black,
+                      size: 30.0,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+                  ),
                 ),
               ),
             ),
-            SizedBox(
-              height: 50.0,
-            ),
+            const SizedBox(height: 40.0),
             GestureDetector(
               onTap: () async {
                 if (_formkey.currentState!.validate()) {
@@ -117,16 +119,20 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 }
               },
               child: Container(
-                padding: EdgeInsets.all(10),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
                 decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text(
-                  "Send Email",
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: const Text(
+                  "ส่ง Email",
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

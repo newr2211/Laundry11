@@ -22,29 +22,6 @@ class Detail extends StatelessWidget {
     return totalPrice;
   }
 
-  // ฟังก์ชันเพื่อบันทึกข้อมูลลง Firebase
-  Future<void> saveBookingToFirebase(int totalPrice) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        Map<String, dynamic> bookingData = {
-          'userId': user.uid,
-          'service': selectedServices,
-          'prices': selectedPrices,
-          'totalPrice': totalPrice,
-          'bookingDate': Timestamp.now(),
-        };
-
-        await FirebaseFirestore.instance
-            .collection('Bookings')
-            .add(bookingData);
-        print("Booking saved to Firebase!");
-      }
-    } catch (e) {
-      print("Error saving booking to Firebase: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     int totalPrice = calculateTotalPrice();
@@ -53,13 +30,15 @@ class Detail extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "รายละเอียดการจอง",
-          style: TextStyle(color: Colors.yellow),
+          style:
+              TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
-        iconTheme: IconThemeData(color: Colors.yellow),
+        backgroundColor: Colors.blue[50],
+        iconTheme: IconThemeData(color: Colors.blue[700]),
+        centerTitle: true,
       ),
       body: Container(
-        color: Colors.blue,
+        decoration: BoxDecoration(color: Colors.blue[50]),
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +46,7 @@ class Detail extends StatelessWidget {
             Text(
               "บริการที่เลือก",
               style: TextStyle(
-                color: Colors.yellow,
+                color: Colors.blue[700],
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
@@ -77,20 +56,26 @@ class Detail extends StatelessWidget {
               child: ListView.builder(
                 itemCount: selectedServices.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      selectedServices[index],
-                      style: TextStyle(fontSize: 18.0, color: Colors.white),
+                  return Card(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
                     ),
-                    trailing: Text(
-                      selectedPrices[index],
-                      style: TextStyle(fontSize: 18.0, color: Colors.white),
+                    child: ListTile(
+                      title: Text(
+                        selectedServices[index],
+                        style: TextStyle(fontSize: 18.0, color: Colors.black),
+                      ),
+                      trailing: Text(
+                        selectedPrices[index],
+                        style: TextStyle(fontSize: 18.0, color: Colors.black),
+                      ),
                     ),
                   );
                 },
               ),
             ),
-            Divider(color: Colors.white, thickness: 2.0),
+            Divider(color: Colors.blueGrey, thickness: 2.0),
             SizedBox(height: 10.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,7 +85,7 @@ class Detail extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.blue[700],
                   ),
                 ),
                 Text(
@@ -108,7 +93,7 @@ class Detail extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.red,
+                    color: Colors.blue[700],
                   ),
                 ),
               ],
@@ -128,10 +113,22 @@ class Detail extends StatelessWidget {
                   ),
                 );
               },
-              child: Center(child: Text("เลือกเวลาการจอง")),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+              ),
+              child: Center(
+                child: Text(
+                  "เลือกเวลาการจอง",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],

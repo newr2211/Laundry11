@@ -12,14 +12,14 @@ class BookingHistory extends StatelessWidget {
     if (user == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("การจองของฉัน",
-              style: TextStyle(color: Colors.yellow)),
-          backgroundColor: Colors.blue,
+          title:
+              Text("การจองของฉัน", style: TextStyle(color: Colors.blue[700])),
+          backgroundColor: Colors.blue[50],
         ),
         body: const Center(
           child: Text(
             "กรุณาเข้าสู่ระบบก่อน",
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            style: TextStyle(color: Colors.black, fontSize: 18),
           ),
         ),
       );
@@ -27,9 +27,10 @@ class BookingHistory extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text("ประวัติการจอง", style: TextStyle(color: Colors.yellow)),
-        backgroundColor: Colors.blue,
+        title: Text("ประวัติการจอง", style: TextStyle(color: Colors.blue[700])),
+        backgroundColor: Colors.blue[50],
+        iconTheme: IconThemeData(color: Colors.blue[700]),
+        centerTitle: true,
       ),
       body: _buildBookingHistory(context, user),
     );
@@ -37,7 +38,7 @@ class BookingHistory extends StatelessWidget {
 
   Widget _buildBookingHistory(BuildContext context, User user) {
     return Container(
-      color: Colors.blue,
+      color: Colors.blue[50],
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Bookings')
@@ -51,7 +52,7 @@ class BookingHistory extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text("ไม่มีประวัติการจอง",
-                  style: TextStyle(color: Colors.white, fontSize: 18)),
+                  style: TextStyle(color: Colors.black, fontSize: 18)),
             );
           }
 
@@ -64,12 +65,10 @@ class BookingHistory extends StatelessWidget {
             itemBuilder: (context, index) {
               var booking = bookings[index];
 
-              // ดึงข้อมูลรายการบริการที่เลือก
               List<String> services = (booking['SelectedServices'] != null)
                   ? List<String>.from(booking['SelectedServices'])
                   : [booking['Service'] ?? 'ไม่ระบุ'];
 
-              // ดึงข้อมูลราคาทั้งหมด
               List<String> prices = (booking['SelectedPrices'] != null)
                   ? List<String>.from(booking['SelectedPrices'])
                   : [booking['Price'] ?? 'ไม่ระบุ'];
@@ -78,21 +77,26 @@ class BookingHistory extends StatelessWidget {
                 margin:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 color: Colors.white,
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
+                  contentPadding: const EdgeInsets.all(10),
                   title: Text(
-                    "วันที่จอง: ${booking['Date']}", // ✅ แสดงเฉพาะบริการแรก
+                    "วันที่จอง: ${booking['Date']}",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                          "ราคา: ${prices.first}"), // ✅ แสดงเฉพาะราคาของบริการแรก
+                      Text("ราคา: ${prices.first}"),
                       Text("เวลา: ${booking['Time']}"),
-                      if (services.length >
-                          1) // ✅ ถ้ามีบริการมากกว่า 1 ให้แสดง "...ดูเพิ่มเติม"
-                        const Text("...ดูเพิ่มเติม",
-                            style: TextStyle(color: Colors.blue)),
+                      if (services.length > 1)
+                        const Text(
+                          "...ดูเพิ่มเติม",
+                          style: TextStyle(color: Colors.blue),
+                        ),
                     ],
                   ),
                   trailing: const Icon(Icons.info_outline, color: Colors.blue),
@@ -133,8 +137,10 @@ class BookingHistory extends StatelessWidget {
                   }),
                 ),
                 const SizedBox(height: 10),
-                Text("📌 สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}",
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "📌 สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),

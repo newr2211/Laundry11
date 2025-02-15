@@ -1,4 +1,4 @@
-import 'package:Laundry/pages/bookinghistory.dart';
+import 'package:Laundry/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,12 +76,9 @@ class _BookingState extends State<Booking> {
   }
 
   Future<void> _bookService() async {
-    if (name == null ||
-        email == null ||
-        name == 'ไม่ระบุชื่อ' ||
-        email == 'ไม่ระบุอีเมล') {
+    if (name == null || email == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("ไม่สามารถจองได้ กรุณาล็อกอินก่อน"),
+        content: Text("กรุณาล็อกอินก่อนทำการจอง"),
         backgroundColor: Colors.red,
       ));
       return;
@@ -99,21 +96,13 @@ class _BookingState extends State<Booking> {
     try {
       await FirebaseFirestore.instance
           .collection("Bookings")
-          .add(userBookingMap)
-          .then((value) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("จองบริการสำเร็จ!"),
-          backgroundColor: Colors.green,
-        ));
-
-        // ไปที่หน้ารายละเอียดการจองทั้งหมด
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BookingHistory(),
-          ),
-        );
-      });
+          .add(userBookingMap);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("จองบริการสำเร็จ!"),
+        backgroundColor: Colors.green,
+      ));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Home()));
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("เกิดข้อผิดพลาดในการจอง: $error"),
@@ -125,22 +114,16 @@ class _BookingState extends State<Booking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: Colors.blue[50],
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Container(
-              margin: EdgeInsets.symmetric(horizontal: 10.0),
+          : Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 50.0),
-                      child: Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 30.0),
-                    ),
-                  ),
+                  _buildHeader(context),
                   SizedBox(height: 30.0),
                   _buildDatePicker(),
                   SizedBox(height: 20.0),
@@ -153,28 +136,40 @@ class _BookingState extends State<Booking> {
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.blue[700]),
+          onPressed: () => Navigator.pop(context),
+        ),
+        Text(
+          "เลือกวันที่และเวลา",
+          style: TextStyle(
+              fontSize: 22.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700]),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDatePicker() {
     return Container(
-      padding: EdgeInsets.all(10.0),
+      padding: EdgeInsets.all(15.0),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          Text("กรุณาเลือกวันที่",
+          Text("เลือกวันที่",
               style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-          Text(_selectedDate.toString().split(' ')[0],
-              style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10.0),
           TableCalendar(
-            availableGestures: AvailableGestures.all,
             focusedDay: _selectedDate,
-            firstDay: DateTime.utc(2025, 01, 01),
-            lastDay: DateTime.utc(2030, 01, 01),
+            firstDay: DateTime.utc(2025, 1, 1),
+            lastDay: DateTime.utc(2030, 1, 1),
             selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
-            onDaySelected: (day, focusDay) {
-              setState(() {
-                _selectedDate = day;
-              });
-            },
+            onDaySelected: (day, _) => setState(() => _selectedDate = day),
             calendarStyle: CalendarStyle(
               selectedDecoration:
                   BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
@@ -188,47 +183,41 @@ class _BookingState extends State<Booking> {
   }
 
   Widget _buildTimePicker() {
-    return Container(
-      padding: EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-          color: Colors.orange, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        children: [
-          Text("กรุณาเลือกเวลา",
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-          GestureDetector(
-            onTap: () => _selectTime(context),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.alarm, color: Colors.white, size: 30.0),
-                SizedBox(width: 20.0),
-                Text(_selectedTime.format(context),
-                    style:
-                        TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => _selectTime(context),
+      child: Container(
+        padding: EdgeInsets.all(15.0),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(15)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.alarm, color: Colors.black),
+            SizedBox(width: 15.0),
+            Text(_selectedTime.format(context),
+                style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBookButton() {
-    return GestureDetector(
-      onTap: _bookService,
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height / 14,
-        decoration: BoxDecoration(
-            color: Colors.orange, borderRadius: BorderRadius.circular(20)),
-        child: Center(
-          child: Text("จองเลย !",
-              style: TextStyle(
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white)),
-        ),
+    return ElevatedButton(
+      onPressed: _bookService,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+        padding: EdgeInsets.symmetric(vertical: 15.0),
+      ),
+      child: Center(
+        child: Text("จองเลย!",
+            style: TextStyle(
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
       ),
     );
   }

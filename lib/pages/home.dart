@@ -1,3 +1,4 @@
+import 'package:Laundry/pages/bookinghistory.dart';
 import 'package:Laundry/pages/detail.dart';
 import 'package:Laundry/pages/login.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   String userName = "User";
   bool isLoading = true;
-  List<String> selectedServices = []; // เก็บบริการที่เลือก
-  List<String> selectedPrices = []; // เก็บราคาของบริการที่เลือก
+  List<String> selectedServices = [];
+  List<String> selectedPrices = [];
 
   @override
   void initState() {
@@ -67,17 +68,17 @@ class _HomeState extends State<Home> {
   }
 
   void updateSelection() {
-    setState(() {}); // อัปเดต UI ทันที
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: Colors.blue[50],
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.white))
-          : Container(
-              margin: EdgeInsets.only(top: 70.0, left: 20.0, right: 20.0),
+          ? Center(child: CircularProgressIndicator(color: Colors.blue))
+          : SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,91 +88,48 @@ class _HomeState extends State<Home> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Welcome",
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            userName,
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 212, 181, 43),
-                              fontSize: 48.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text("ยินดีให้บริการ",
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.w500)),
+                          Text(userName,
+                              style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontSize: 32.0,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: logOut,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 15.0),
-                          child: Center(
-                            child:
-                                Icon(Icons.logout, color: Colors.red, size: 40),
-                          ),
-                        ),
+                      IconButton(
+                        icon: Icon(Icons.logout, color: Colors.red, size: 30),
+                        onPressed: logOut,
                       )
                     ],
                   ),
-                  SizedBox(height: 5.0),
-                  Divider(color: Colors.black, thickness: 2.0),
-                  SizedBox(height: 5.0),
-                  Text(
-                    "บริการ",
-                    style: TextStyle(
-                      color: Colors.yellow,
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 5.0),
-                  ServiceTile(
-                      service: 'ซักเสื้อผ้าทั่วไป',
-                      price: '300฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
-                  ServiceTile(
-                      service: 'ซักผ้าปูที่นอน,ฝูก',
-                      price: '1000฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
-                  ServiceTile(
-                      service: 'ซักชุดนักเรียน,สูท',
-                      price: '400฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
-                  ServiceTile(
-                      service: 'ซักผ้าม่าน',
-                      price: '500฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
-                  ServiceTile(
-                      service: 'ซักรองเท้า',
-                      price: '150฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
-                  ServiceTile(
-                      service: 'ซักรองเท้าหนัง',
-                      price: '500฿',
-                      imagePath: 'images/logo.png',
-                      updateParent: updateSelection,
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices),
+                  SizedBox(height: 10.0),
+                  Divider(color: Colors.grey, thickness: 1.5),
+                  SizedBox(height: 10.0),
+                  Text("บริการ",
+                      style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10.0),
+                  ...[
+                    {'service': 'ซักเสื้อผ้าทั่วไป', 'price': '300฿'},
+                    {'service': 'ซักผ้าปูที่นอน,ฝูก', 'price': '1000฿'},
+                    {'service': 'ซักชุดนักเรียน,สูท', 'price': '400฿'},
+                    {'service': 'ซักผ้าม่าน', 'price': '500฿'},
+                    {'service': 'ซักรองเท้า', 'price': '150฿'},
+                    {'service': 'ซักรองเท้าหนัง', 'price': '500฿'}
+                  ].map((item) => ServiceTile(
+                        service: item['service']!,
+                        price: item['price']!,
+                        updateParent: updateSelection,
+                        selectedServices: selectedServices,
+                        selectedPrices: selectedPrices,
+                      )),
+                  SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: selectedServices.isNotEmpty
                         ? () {
@@ -189,9 +147,32 @@ class _HomeState extends State<Home> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: selectedServices.isNotEmpty
                           ? Colors.orange
-                          : Colors.grey,
+                          : Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: Center(child: Text("ไปยังรายการ")),
+                    child: Center(
+                        child: Text("ไปยังรายการ",
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.white))),
+                  ),
+                  SizedBox(height: 15),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingHistory(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    child: Center(
+                        child: Text("ประวัติการจอง",
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.white))),
                   ),
                 ],
               ),
@@ -201,7 +182,7 @@ class _HomeState extends State<Home> {
 }
 
 class ServiceTile extends StatefulWidget {
-  final String service, price, imagePath;
+  final String service, price;
   final Function updateParent;
   final List<String> selectedServices;
   final List<String> selectedPrices;
@@ -210,7 +191,6 @@ class ServiceTile extends StatefulWidget {
     super.key,
     required this.service,
     required this.price,
-    required this.imagePath,
     required this.updateParent,
     required this.selectedServices,
     required this.selectedPrices,
@@ -237,35 +217,15 @@ class _ServiceTileState extends State<ServiceTile> {
             widget.selectedPrices.remove(widget.price);
           }
         });
-        widget.updateParent(); // แจ้งให้ Home อัปเดต UI
+        widget.updateParent();
       },
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 6.0),
-        decoration: BoxDecoration(
-            color: isSelected ? Colors.green : Colors.orange,
-            borderRadius: BorderRadius.circular(10)),
-        padding: EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset(widget.imagePath, height: 50),
-            Text(
-              widget.service,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              widget.price,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+      child: Card(
+        color: isSelected ? Colors.green : Colors.white,
+        child: ListTile(
+          title: Text(widget.service, style: TextStyle(fontSize: 18)),
+          subtitle: Text(widget.price, style: TextStyle(fontSize: 16)),
+          trailing: Icon(
+              isSelected ? Icons.check_box : Icons.check_box_outline_blank),
         ),
       ),
     );
