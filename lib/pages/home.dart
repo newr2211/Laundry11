@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:Laundry/pages/booking.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:Laundry/pages/service1.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -16,8 +17,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   String userName = "User";
   bool isLoading = true;
-  List<String> selectedServices = [];
-  List<String> selectedPrices = [];
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -67,8 +67,21 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void updateSelection() {
-    setState(() {});
+  void onTabTapped(int index) {
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              Detail(selectedServices: [], selectedPrices: []),
+        ),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BookingHistory()),
+      );
+    }
   }
 
   @override
@@ -115,118 +128,72 @@ class _HomeState extends State<Home> {
                           fontSize: 22.0,
                           fontWeight: FontWeight.bold)),
                   SizedBox(height: 10.0),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Service1(),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      color: Colors.white,
+                      child: ListTile(
+                        title: Text('ซักเสื้อผ้าทั่วไป',
+                            style: TextStyle(fontSize: 18)),
+                        subtitle: Text('300฿', style: TextStyle(fontSize: 16)),
+                      ),
+                    ),
+                  ),
                   ...[
-                    {'service': 'ซักเสื้อผ้าทั่วไป', 'price': '300฿'},
                     {'service': 'ซักผ้าปูที่นอน,ฝูก', 'price': '1000฿'},
                     {'service': 'ซักชุดนักเรียน,สูท', 'price': '400฿'},
                     {'service': 'ซักผ้าม่าน', 'price': '500฿'},
                     {'service': 'ซักรองเท้า', 'price': '150฿'},
                     {'service': 'ซักรองเท้าหนัง', 'price': '500฿'}
-                  ].map((item) => ServiceTile(
-                        service: item['service']!,
-                        price: item['price']!,
-                        updateParent: updateSelection,
-                        selectedServices: selectedServices,
-                        selectedPrices: selectedPrices,
-                      )),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: selectedServices.isNotEmpty
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Detail(
-                                  selectedServices: selectedServices,
-                                  selectedPrices: selectedPrices,
-                                ),
+                  ].map((item) => GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Detail(
+                                selectedServices: [item['service']!],
+                                selectedPrices: [item['price']!],
                               ),
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedServices.isNotEmpty
-                          ? Colors.orange
-                          : Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    child: Center(
-                        child: Text("ไปยังรายการ",
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white))),
-                  ),
-                  SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookingHistory(),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: Colors.white,
+                          child: ListTile(
+                            title: Text(item['service']!,
+                                style: TextStyle(fontSize: 18)),
+                            subtitle: Text(item['price']!,
+                                style: TextStyle(fontSize: 16)),
+                          ),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    child: Center(
-                        child: Text("ประวัติการจอง",
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white))),
-                  ),
+                      )),
                 ],
               ),
             ),
-    );
-  }
-}
-
-class ServiceTile extends StatefulWidget {
-  final String service, price;
-  final Function updateParent;
-  final List<String> selectedServices;
-  final List<String> selectedPrices;
-
-  const ServiceTile({
-    super.key,
-    required this.service,
-    required this.price,
-    required this.updateParent,
-    required this.selectedServices,
-    required this.selectedPrices,
-  });
-
-  @override
-  _ServiceTileState createState() => _ServiceTileState();
-}
-
-class _ServiceTileState extends State<ServiceTile> {
-  bool isSelected = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isSelected = !isSelected;
-          if (isSelected) {
-            widget.selectedServices.add(widget.service);
-            widget.selectedPrices.add(widget.price);
-          } else {
-            widget.selectedServices.remove(widget.service);
-            widget.selectedPrices.remove(widget.price);
-          }
-        });
-        widget.updateParent();
-      },
-      child: Card(
-        color: isSelected ? Colors.green : Colors.white,
-        child: ListTile(
-          title: Text(widget.service, style: TextStyle(fontSize: 18)),
-          subtitle: Text(widget.price, style: TextStyle(fontSize: 16)),
-          trailing: Icon(
-              isSelected ? Icons.check_box : Icons.check_box_outline_blank),
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: onTabTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'หน้าหลัก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'รายการที่เลือก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'ประวัติการจอง',
+          ),
+        ],
       ),
     );
   }
