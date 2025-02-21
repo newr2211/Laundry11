@@ -1,58 +1,66 @@
 import 'package:flutter/material.dart';
 
-class Service2 extends StatefulWidget {
+class Service5 extends StatefulWidget {
   @override
-  _Service2State createState() => _Service2State();
+  _Service5State createState() => _Service5State();
 }
 
-class _Service2State extends State<Service2> {
-  int quantity = 1; // จำนวนชิ้นเริ่มต้น
-  int pricePerItem = 25; // ราคาต่อชิ้น
-  bool isServiceEnabled = false; // เริ่มต้นสวิตซ์รีดผ้าปิด
-  bool isStainRemovalEnabled = false; // สวิตซ์สำหรับขจัดคราบ
-  bool isWhiteBrighteningEnabled = false; // สวิตซ์ให้ผ้าขาวยิ่งขาว
-  bool isBlackBrighteningEnabled = false; // สวิตซ์ให้ผ้าดำยิ่งดำ
-  bool isDenimBlueEnabled = false; // สวิตซ์ให้ยีนส์ยิ่งน้ำเงิน
-  int premiumPrice = 15; // ราคาน้ำยารีดผ้า
-  int stainRemovalPrice = 20; // ราคาขจัดคราบ
-  int whiteBrighteningPrice = 18; // ราคาผ้าขาวยิ่งขาว
-  int blackBrighteningPrice = 18; // ราคาผ้าดำยิ่งดำ
-  int denimBluePrice = 25; // ราคายีนส์ยิ่งน้ำเงิน
+class _Service5State extends State<Service5> {
+  int quantity = 1;
+  int pricePerItem = 25;
 
-  // คำนวณราคารวม
-  int get totalPrice {
-    int basePrice = quantity * pricePerItem;
-    int premiumTotal = isServiceEnabled ? quantity * premiumPrice : 0;
-    int stainRemovalTotal =
-        isStainRemovalEnabled ? quantity * stainRemovalPrice : 0;
-    int whiteBrighteningTotal =
-        isWhiteBrighteningEnabled ? quantity * whiteBrighteningPrice : 0;
-    int blackBrighteningTotal =
-        isBlackBrighteningEnabled ? quantity * blackBrighteningPrice : 0;
-    int denimBlueTotal = isDenimBlueEnabled ? quantity * denimBluePrice : 0;
+  Map<String, int> serviceQuantities = {
+    "ซัก-พับ": 0,
+    "รีดผ้า": 0,
+    "ขจัดคราบ": 0,
+    "ให้ผ้าขาวยิ่งขาว": 0,
+    "ให้ผ้าดำยิ่งดำ": 0,
+    "ให้ยีนส์ยิ่งน้ำเงิน": 0,
+  };
 
-    return basePrice +
-        premiumTotal +
-        stainRemovalTotal +
-        whiteBrighteningTotal +
-        blackBrighteningTotal +
-        denimBlueTotal;
-  }
+  Map<String, int> servicePrices = {
+    "ซัก-พับ": 25,
+    "รีดผ้า": 15,
+    "ขจัดคราบ": 20,
+    "ให้ผ้าขาวยิ่งขาว": 15,
+    "ให้ผ้าดำยิ่งดำ": 15,
+    "ให้ยีนส์ยิ่งน้ำเงิน": 25,
+  };
 
-  // ฟังก์ชันเพิ่มจำนวน
-  void increment() {
-    setState(() {
-      quantity++;
+  Map<String, TextEditingController> serviceControllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // สร้าง TextEditingController สำหรับแต่ละบริการ
+    serviceQuantities.keys.forEach((service) {
+      serviceControllers[service] = TextEditingController();
     });
   }
 
-  // ฟังก์ชันลดจำนวน
-  void decrement() {
-    if (quantity > 1) {
-      setState(() {
-        quantity--;
-      });
-    }
+  @override
+  void dispose() {
+    // ทำการ dispose เมื่อไม่ใช้
+    serviceControllers.forEach((key, controller) {
+      controller.dispose();
+    });
+    super.dispose();
+  }
+
+  int get totalPrice {
+    int basePrice = quantity * pricePerItem;
+    int extraServicesPrice = serviceQuantities.entries
+        .map(
+            (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
+        .fold(0, (prev, amount) => prev + amount);
+    return basePrice + extraServicesPrice;
+  }
+
+  void updateServiceQuantity(String service, int change) {
+    setState(() {
+      serviceQuantities[service] =
+          (serviceQuantities[service]! + change).clamp(0, 99);
+    });
   }
 
   @override
@@ -64,11 +72,8 @@ class _Service2State extends State<Service2> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row for image and text "ซัก-พับ" in center
             Row(
-              mainAxisAlignment: MainAxisAlignment.center, // จัดให้อยู่ตรงกลาง
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // จัดให้อยู่ตรงกลางในแนวตั้ง
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset("images/111.png", height: 35),
                 SizedBox(width: 10),
@@ -97,111 +102,79 @@ class _Service2State extends State<Service2> {
               ],
             ),
             SizedBox(height: 20),
-            Text("เลือกจำนวนชิ้น",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("ค่าบริการซัก-พับ ตัวละ $pricePerItem บาท",
-                      style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Text("฿${quantity * pricePerItem}",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue)),
-                      Spacer(),
-                      IconButton(
-                          icon: Icon(Icons.remove), onPressed: decrement),
-                      Text("$quantity", style: TextStyle(fontSize: 18)),
-                      IconButton(icon: Icon(Icons.add), onPressed: increment),
-                    ],
-                  ),
-                  TextField(
-                    decoration: InputDecoration(
-                        hintText: "โปรดแจ้งความต้องการเพิ่มเติม (ถ้ามี)"),
-                  ),
-                ],
-              ),
-            ),
+            _buildQuantitySelector(
+                "ซัก-พับ", quantity, (val) => setState(() => quantity = val)),
             SizedBox(height: 20),
-            // สวิตซ์สำหรับรีดผ้า
-            _buildSwitch("รีดผ้า", isServiceEnabled, (value) {
-              setState(() {
-                isServiceEnabled = value;
-              });
-            }),
-            if (isServiceEnabled)
-              _buildServiceDetail("รีดผ้า", premiumPrice, "assets/iron.png"),
-            // สวิตซ์สำหรับบริการเสริมต่างๆ
-            _buildSwitch("ขจัดคราบ", isStainRemovalEnabled, (value) {
-              setState(() {
-                isStainRemovalEnabled = value;
-              });
-            }),
-            if (isStainRemovalEnabled)
-              _buildServiceDetail(
-                  "ขจัดคราบ", stainRemovalPrice, "assets/stain_removal.png"),
-            _buildSwitch("ให้ผ้าขาวยิ่งขาว", isWhiteBrighteningEnabled,
-                (value) {
-              setState(() {
-                isWhiteBrighteningEnabled = value;
-              });
-            }),
-            if (isWhiteBrighteningEnabled)
-              _buildServiceDetail("ให้ผ้าขาวยิ่งขาว", whiteBrighteningPrice,
-                  "assets/white_brightening.png"),
-            _buildSwitch("ให้ผ้าดำยิ่งดำ", isBlackBrighteningEnabled, (value) {
-              setState(() {
-                isBlackBrighteningEnabled = value;
-              });
-            }),
-            if (isBlackBrighteningEnabled)
-              _buildServiceDetail("ให้ผ้าดำยิ่งดำ", blackBrighteningPrice,
-                  "assets/black_brightening.png"),
-            _buildSwitch("ให้ยีนส์ยิ่งน้ำเงิน", isDenimBlueEnabled, (value) {
-              setState(() {
-                isDenimBlueEnabled = value;
-              });
-            }),
-            if (isDenimBlueEnabled)
-              _buildServiceDetail("ให้ยีนส์ยิ่งน้ำเงิน", denimBluePrice,
-                  "assets/denim_blue.png"),
-            SizedBox(height: 20),
+            for (var service in serviceQuantities.keys) ...[
+              _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
+                setState(() {
+                  serviceQuantities[service] = value ? 1 : 0;
+                });
+              }),
+              if (serviceQuantities[service]! > 0)
+                _buildQuantitySelector(
+                    service,
+                    serviceQuantities[service]!,
+                    (val) => updateServiceQuantity(
+                        service, val - serviceQuantities[service]!)),
+              SizedBox(height: 10),
+            ],
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(10),
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            padding: EdgeInsets.symmetric(vertical: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-              style: TextStyle(fontSize: 18, color: Colors.white)),
+      bottomNavigationBar: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          padding: EdgeInsets.symmetric(vertical: 15),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
+        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
 
-  // ฟังก์ชันสำหรับสร้างสวิตซ์
+  Widget _buildQuantitySelector(
+      String label, int quantity, Function(int) onQuantityChanged) {
+    int itemPrice = servicePrices[label] ?? pricePerItem;
+
+    return Container(
+      padding: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("$label ตัวละ ฿$itemPrice", style: TextStyle(fontSize: 16)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Text("฿${quantity * itemPrice}",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue)),
+              Spacer(),
+              IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: quantity > 0
+                      ? () => onQuantityChanged(quantity - 1)
+                      : null),
+              Text("$quantity", style: TextStyle(fontSize: 18)),
+              IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () => onQuantityChanged(quantity + 1)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSwitch(String label, bool value, Function(bool) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -215,46 +188,6 @@ class _Service2State extends State<Service2> {
             onChanged: onChanged,
           ),
         ],
-      ),
-    );
-  }
-
-  // ฟังก์ชันแสดงรายละเอียดบริการเสริม
-  Widget _buildServiceDetail(
-      String label, int servicePrice, String imageAsset) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Container(
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
-        ),
-        child: Column(
-          children: [
-            Image.asset(imageAsset, height: 80), // เพิ่มภาพสำหรับบริการ
-            SizedBox(height: 10),
-            Text("$label ตัวละ ฿$servicePrice", style: TextStyle(fontSize: 16)),
-            Row(
-              children: [
-                Text("฿${quantity * servicePrice}",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue)),
-                Spacer(),
-                IconButton(icon: Icon(Icons.remove), onPressed: decrement),
-                Text("$quantity", style: TextStyle(fontSize: 18)),
-                IconButton(icon: Icon(Icons.add), onPressed: increment),
-              ],
-            ),
-            TextField(
-              decoration:
-                  InputDecoration(hintText: "โปรดแจ้งความต้องการพิเศษ (ถ้ามี)"),
-            ),
-          ],
-        ),
       ),
     );
   }

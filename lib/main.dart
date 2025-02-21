@@ -1,5 +1,6 @@
 import 'package:Laundry/pages/bookinghistory.dart';
 import 'package:Laundry/pages/detail.dart';
+import 'package:Laundry/pages/editprofile.dart';
 import 'package:Laundry/pages/service1.dart';
 import 'package:flutter/material.dart';
 import 'package:Laundry/pages/booking.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      home: Service1(),
+      home: Home(),
     );
   }
 }

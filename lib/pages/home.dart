@@ -1,6 +1,11 @@
 import 'package:Laundry/pages/bookinghistory.dart';
 import 'package:Laundry/pages/detail.dart';
+import 'package:Laundry/pages/editprofile.dart';
 import 'package:Laundry/pages/login.dart';
+import 'package:Laundry/pages/service2.dart';
+import 'package:Laundry/pages/service3.dart';
+import 'package:Laundry/pages/service4.dart';
+import 'package:Laundry/pages/service5.dart';
 import 'package:flutter/material.dart';
 import 'package:Laundry/pages/booking.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -106,11 +111,25 @@ class _HomeState extends State<Home> {
                                   color: Colors.blue,
                                   fontSize: 24.0,
                                   fontWeight: FontWeight.w500)),
-                          Text(userName,
-                              style: TextStyle(
-                                  color: Colors.blueAccent,
-                                  fontSize: 32.0,
-                                  fontWeight: FontWeight.bold)),
+                          Row(
+                            children: [
+                              Text(userName,
+                                  style: TextStyle(
+                                      color: Colors.blueAccent,
+                                      fontSize: 32.0,
+                                      fontWeight: FontWeight.bold)),
+                              IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditProfile(),
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(Icons.edit))
+                            ],
+                          ),
                         ],
                       ),
                       IconButton(
@@ -128,52 +147,180 @@ class _HomeState extends State<Home> {
                           fontSize: 22.0,
                           fontWeight: FontWeight.bold)),
                   SizedBox(height: 10.0),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Service1(),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      color: Colors.white,
-                      child: ListTile(
-                        title: Text('ซักเสื้อผ้าทั่วไป',
-                            style: TextStyle(fontSize: 18)),
-                        subtitle: Text('300฿', style: TextStyle(fontSize: 16)),
-                      ),
-                    ),
-                  ),
-                  ...[
-                    {'service': 'ซักผ้าปูที่นอน,ฝูก', 'price': '1000฿'},
-                    {'service': 'ซักชุดนักเรียน,สูท', 'price': '400฿'},
-                    {'service': 'ซักผ้าม่าน', 'price': '500฿'},
-                    {'service': 'ซักรองเท้า', 'price': '150฿'},
-                    {'service': 'ซักรองเท้าหนัง', 'price': '500฿'}
-                  ].map((item) => GestureDetector(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Detail(
-                                selectedServices: [item['service']!],
-                                selectedPrices: [item['price']!],
-                              ),
+                              builder: (context) => Service1(),
                             ),
                           );
                         },
-                        child: Card(
-                          color: Colors.white,
-                          child: ListTile(
-                            title: Text(item['service']!,
-                                style: TextStyle(fontSize: 18)),
-                            subtitle: Text(item['price']!,
-                                style: TextStyle(fontSize: 16)),
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.blue[700],
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "images/111.png", // รูปภาพที่เพิ่ม
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                SizedBox(height: 10), // เพิ่มระยะห่าง
+                                Text('ซัก-ผับ', style: TextStyle(fontSize: 18)),
+                              ],
+                            ),
                           ),
                         ),
-                      )),
+                      ),
+                      SizedBox(width: 30.0),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Service2(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.pinkAccent,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "images/44.png", // รูปภาพที่เพิ่ม
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                SizedBox(height: 10), // เพิ่มระยะห่าง
+                                Text('ซักรองเท้า',
+                                    style: TextStyle(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Service3(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.cyanAccent,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "images/55.png", // รูปภาพที่เพิ่ม
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                SizedBox(height: 10), // เพิ่มระยะห่าง
+                                Text('รีดเทานั้น',
+                                    style: TextStyle(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 30.0),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Service4(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.yellowAccent,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "images/66.png", // รูปภาพที่เพิ่ม
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                SizedBox(height: 10), // เพิ่มระยะห่าง
+                                Text('เครื่องนอนและอื่นๆ',
+                                    style: TextStyle(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Service5(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.blueGrey,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "images/77.png", // รูปภาพที่เพิ่ม
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                SizedBox(height: 10), // เพิ่มระยะห่าง
+                                Text('ซักชุดสูท',
+                                    style: TextStyle(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -16,6 +16,7 @@ class _SignUpState extends State<SignUp> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController numberController = TextEditingController();
 
   // รายการอีเมลของ admin
   final List<String> adminEmails = ["admin@abc.com", "admin1@abc.com"];
@@ -39,6 +40,7 @@ class _SignUpState extends State<SignUp> {
             "Id": id,
             "Name": nameController.text,
             "Email": emailController.text,
+            "Number": numberController.text,
             "Role": isAdmin ? "admin" : "user",
           };
 
@@ -135,6 +137,9 @@ class _SignUpState extends State<SignUp> {
                   _buildTextField(
                       "รหัสผ่าน", passwordController, Icons.lock_outline,
                       isPassword: true),
+                  SizedBox(height: 20.0),
+                  _buildTextField(
+                      "เบอร์โทร", numberController, Icons.phone_outlined),
                   SizedBox(height: 40.0),
                   GestureDetector(
                     onTap: registration,

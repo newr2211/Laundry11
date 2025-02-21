@@ -4,27 +4,15 @@ import 'package:Laundry/pages/booking.dart';
 import 'package:flutter/material.dart';
 
 class Detail extends StatelessWidget {
-  final List<String> selectedServices;
-  final List<String> selectedPrices;
+  final List<Map<String, dynamic>> selectedServices;
+  final List<int> selectedPrices;
 
-  const Detail({
-    super.key,
-    required this.selectedServices,
-    required this.selectedPrices,
-  });
-
-  // คำนวณราคาทั้งหมด
-  int calculateTotalPrice() {
-    int totalPrice = 0;
-    for (var price in selectedPrices) {
-      totalPrice += int.tryParse(price.replaceAll('฿', '').trim()) ?? 0;
-    }
-    return totalPrice;
-  }
+  Detail({required this.selectedServices, required this.selectedPrices});
 
   @override
   Widget build(BuildContext context) {
-    int totalPrice = calculateTotalPrice();
+    // การคำนวณราคาทั้งหมดในหน้า Detail
+    int totalPrice = selectedPrices.fold(0, (prev, amount) => prev + amount);
 
     return Scaffold(
       appBar: AppBar(
@@ -63,11 +51,12 @@ class Detail extends StatelessWidget {
                     ),
                     child: ListTile(
                       title: Text(
-                        selectedServices[index],
+                        selectedServices[index]
+                            ['service'], // ใช้ชื่อบริการจาก selectedServices
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                       trailing: Text(
-                        selectedPrices[index],
+                        '${selectedPrices[index]}฿', // แสดงราคาจาก selectedPrices
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                     ),
@@ -101,17 +90,7 @@ class Detail extends StatelessWidget {
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Booking(
-                      service: selectedServices.join(", "),
-                      price: "$totalPrice฿",
-                      selectedServices: selectedServices,
-                      selectedPrices: selectedPrices,
-                    ),
-                  ),
-                );
+                // Code to navigate to the next screen
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,

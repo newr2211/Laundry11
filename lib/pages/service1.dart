@@ -10,6 +10,7 @@ class _Service1State extends State<Service1> {
   int pricePerItem = 25;
 
   Map<String, int> serviceQuantities = {
+    "ซัก-พับ": 0,
     "รีดผ้า": 0,
     "ขจัดคราบ": 0,
     "ให้ผ้าขาวยิ่งขาว": 0,
@@ -18,6 +19,7 @@ class _Service1State extends State<Service1> {
   };
 
   Map<String, int> servicePrices = {
+    "ซัก-พับ": 25,
     "รีดผ้า": 15,
     "ขจัดคราบ": 20,
     "ให้ผ้าขาวยิ่งขาว": 15,
@@ -120,19 +122,16 @@ class _Service1State extends State<Service1> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(10),
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            padding: EdgeInsets.symmetric(vertical: 15),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-              style: TextStyle(fontSize: 18, color: Colors.white)),
+      bottomNavigationBar: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          padding: EdgeInsets.symmetric(vertical: 15),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
+        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
@@ -170,12 +169,6 @@ class _Service1State extends State<Service1> {
                   icon: Icon(Icons.add),
                   onPressed: () => onQuantityChanged(quantity + 1)),
             ],
-          ),
-          // ใช้ TextEditingController เพื่อเก็บข้อมูลที่กรอกใน TextField
-          TextField(
-            controller: serviceControllers[label],
-            decoration: InputDecoration(
-                hintText: "โปรดแจ้งความต้องการเพิ่มเติม (ถ้ามี)"),
           ),
         ],
       ),
