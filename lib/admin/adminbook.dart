@@ -2,47 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class BookingHistory extends StatelessWidget {
-  const BookingHistory({super.key});
+class AdminBook extends StatelessWidget {
+  const AdminBook({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title:
-              Text("การจองของฉัน", style: TextStyle(color: Colors.blue[700])),
-          backgroundColor: Colors.blue[50],
-        ),
-        body: const Center(
-          child: Text(
-            "กรุณาเข้าสู่ระบบก่อน",
-            style: TextStyle(color: Colors.black, fontSize: 18),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("ประวัติการจอง", style: TextStyle(color: Colors.blue[700])),
+        title: Text("ประวัติการจองของลูกค้า",
+            style: TextStyle(color: Colors.blue[700])),
         backgroundColor: Colors.blue[50],
         iconTheme: IconThemeData(color: Colors.blue[700]),
         centerTitle: true,
       ),
-      body: _buildBookingHistory(context, user),
+      body: _buildBookingHistory(context),
     );
   }
 
-  Widget _buildBookingHistory(BuildContext context, User user) {
+  Widget _buildBookingHistory(BuildContext context) {
     return Container(
       color: Colors.blue[50],
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Bookings')
-            .where('Email', isEqualTo: user.email)
             .orderBy('Date', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -57,7 +39,8 @@ class BookingHistory extends StatelessWidget {
           }
 
           var bookings = snapshot.data!.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
+              .map((doc) =>
+                  {'id': doc.id, ...doc.data() as Map<String, dynamic>})
               .toList();
 
           return ListView.builder(
@@ -73,9 +56,6 @@ class BookingHistory extends StatelessWidget {
                   ? List<String>.from(booking['SelectedPrices'])
                   : [booking['Price'] ?? 'ไม่ระบุ'];
 
-              String? deliveryAddress =
-                  booking['DeliveryAddress'] ?? 'ไม่ระบุที่อยู่';
-
               return Card(
                 margin:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
@@ -87,7 +67,7 @@ class BookingHistory extends StatelessWidget {
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(10),
                   title: Text(
-                    "วันที่จอง: ${booking['Date']}",
+                    "${booking['Username']} - ${booking['Date']}",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
@@ -95,18 +75,29 @@ class BookingHistory extends StatelessWidget {
                     children: [
                       Text("ราคา: ${prices.first}"),
                       Text("เวลา: ${booking['Time']}"),
-                      Text("ที่อยู่จัดส่ง: $deliveryAddress"),
+                      Text("สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}"),
                       if (services.length > 1)
-                        const Text(
-                          "...ดูเพิ่มเติม",
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        const Text("...ดูเพิ่มเติม",
+                            style: TextStyle(color: Colors.blue)),
                     ],
                   ),
-                  trailing: const Icon(Icons.info_outline, color: Colors.blue),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      _updateBookingStatus(booking['id'], value);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                          value: "กำลังดำเนินการ",
+                          child: Text("กำลังดำเนินการ")),
+                      const PopupMenuItem(
+                          value: "เสร็จสิ้น", child: Text("เสร็จสิ้น")),
+                      const PopupMenuItem(
+                          value: "ยกเลิก", child: Text("ยกเลิก")),
+                    ],
+                    icon: const Icon(Icons.more_vert, color: Colors.blue),
+                  ),
                   onTap: () {
-                    _showBookingDetails(
-                        context, booking, services, prices, deliveryAddress);
+                    _showBookingDetails(context, booking, services, prices);
                   },
                 ),
               );
@@ -117,8 +108,14 @@ class BookingHistory extends StatelessWidget {
     );
   }
 
+  void _updateBookingStatus(String bookingId, String status) {
+    FirebaseFirestore.instance.collection('Bookings').doc(bookingId).update({
+      'Status': status,
+    });
+  }
+
   void _showBookingDetails(BuildContext context, Map<String, dynamic> booking,
-      List<String> services, List<String> prices, String? deliveryAddress) {
+      List<String> services, List<String> prices) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -131,10 +128,10 @@ class BookingHistory extends StatelessWidget {
               children: [
                 Text("📅 วันที่จอง: ${booking['Date'] ?? 'ไม่ระบุ'}"),
                 Text("⏰ เวลา: ${booking['Time'] ?? 'ไม่ระบุ'}"),
+                Text("📧 ผู้ใช้: ${booking['Email'] ?? 'ไม่ระบุ'}"),
                 const SizedBox(height: 10),
                 const Text("📝 รายการบริการที่เลือก:",
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: List.generate(services.length, (index) {
@@ -142,19 +139,15 @@ class BookingHistory extends StatelessWidget {
                   }),
                 ),
                 const SizedBox(height: 10),
-                Text("📍 ที่อยู่จัดส่ง: $deliveryAddress"),
-                const SizedBox(height: 10),
-                Text(
-                  "📌 สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text("📌 สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}",
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // ปิดป๊อปอัพ
+                Navigator.of(context).pop();
               },
               child: const Text("ปิด", style: TextStyle(color: Colors.red)),
             ),

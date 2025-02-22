@@ -77,8 +77,11 @@ class _HomeState extends State<Home> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              Detail(selectedServices: [], selectedPrices: []),
+          builder: (context) => Detail(
+            selectedServices: [],
+            selectedPrices: [],
+            serviceQuantities: {},
+          ),
         ),
       );
     } else if (index == 2) {

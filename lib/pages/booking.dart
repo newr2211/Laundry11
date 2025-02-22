@@ -12,6 +12,7 @@ class Booking extends StatefulWidget {
     required this.price,
     required List selectedPrices,
     required List selectedServices,
+    required int totalPrice,
   });
 
   @override
@@ -19,7 +20,7 @@ class Booking extends StatefulWidget {
 }
 
 class _BookingState extends State<Booking> {
-  String? name, email;
+  String? name, email, additionalMessage, deliveryAddress;
   bool isLoading = true;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
@@ -91,6 +92,8 @@ class _BookingState extends State<Booking> {
       "Time": _selectedTime.format(context),
       "Username": name,
       "Email": email,
+      "AdditionalMessage": additionalMessage ?? '',
+      "DeliveryAddress": deliveryAddress ?? '', // บันทึกที่อยู่ในการจัดส่ง
     };
 
     try {
@@ -128,6 +131,8 @@ class _BookingState extends State<Booking> {
                   _buildDatePicker(),
                   SizedBox(height: 20.0),
                   _buildTimePicker(),
+                  SizedBox(height: 20.0),
+                  _buildDeliveryAddressField(), // ช่องใส่ที่อยู่
                   SizedBox(height: 40.0),
                   _buildBookButton()
                 ],
@@ -201,6 +206,25 @@ class _BookingState extends State<Booking> {
                     color: Colors.black)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryAddressField() {
+    return Container(
+      padding: EdgeInsets.all(15.0),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "กรอกที่อยู่สำหรับจัดส่ง",
+          border: InputBorder.none,
+        ),
+        onChanged: (value) {
+          setState(() {
+            deliveryAddress = value;
+          });
+        },
       ),
     );
   }

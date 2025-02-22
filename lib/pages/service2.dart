@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Laundry/services/serviceProvider.dart';
+import 'package:Laundry/pages/detail.dart';
 
 class Service2 extends StatefulWidget {
   @override
@@ -7,14 +10,16 @@ class Service2 extends StatefulWidget {
 
 class _Service2State extends State<Service2> {
   int quantity = 1;
-  int pricePerItem = 400;
+  int pricePerItem = 0;
 
   Map<String, int> serviceQuantities = {
+    "ซักรองเท้า": 0,
     "น้ำหอมรองเท้า": 0,
     "ทำความสะอาดด้วยเทคนิคพิเศษ": 0,
   };
 
   Map<String, int> servicePrices = {
+    "ซักรองเท้า": 400,
     "น้ำหอมรองเท้า": 150,
     "ทำความสะอาดด้วยเทคนิคพิเศษ": 200,
   };
@@ -24,7 +29,6 @@ class _Service2State extends State<Service2> {
   @override
   void initState() {
     super.initState();
-    // สร้าง TextEditingController สำหรับแต่ละบริการ
     serviceQuantities.keys.forEach((service) {
       serviceControllers[service] = TextEditingController();
     });
@@ -32,7 +36,6 @@ class _Service2State extends State<Service2> {
 
   @override
   void dispose() {
-    // ทำการ dispose เมื่อไม่ใช้
     serviceControllers.forEach((key, controller) {
       controller.dispose();
     });
@@ -94,9 +97,6 @@ class _Service2State extends State<Service2> {
               ],
             ),
             SizedBox(height: 20),
-            _buildQuantitySelector("ซักรองเท้า", quantity,
-                (val) => setState(() => quantity = val)),
-            SizedBox(height: 20),
             for (var service in serviceQuantities.keys) ...[
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
@@ -115,7 +115,43 @@ class _Service2State extends State<Service2> {
         ),
       ),
       bottomNavigationBar: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // สร้างรายการบริการที่เลือกและราคาที่เกี่ยวข้อง
+          List<Map<String, dynamic>> selectedServices = [];
+          List<int> selectedPrices = [];
+
+          serviceQuantities.forEach((service, quantity) {
+            if (quantity > 0) {
+              selectedServices.add({
+                'service': service,
+                'quantity': quantity,
+                'price': servicePrices[service] ?? pricePerItem,
+                'total': servicePrices[service]! * quantity,
+              });
+              selectedPrices.add(
+                  servicePrices[service]! * quantity); // เพิ่มราคาที่คำนวณแล้ว
+            }
+          });
+
+          // ใช้ Provider เพื่อเก็บข้อมูลที่เลือก
+          selectedServices.forEach((service) {
+            context
+                .read<ServiceProvider>()
+                .addService(service, service['price']);
+          });
+
+          // ใช้ Navigator.push เพื่อไปที่หน้า DetailPage พร้อมข้อมูล
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Detail(
+                selectedServices: selectedServices,
+                selectedPrices: selectedPrices,
+                serviceQuantities: {}, // ส่งรายการราคาที่คำนวณแล้ว
+              ),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           padding: EdgeInsets.symmetric(vertical: 15),

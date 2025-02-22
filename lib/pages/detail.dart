@@ -1,17 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:Laundry/pages/booking.dart';
+import 'package:Laundry/services/serviceProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // นำเข้า Provider
+import 'booking.dart'; // นำเข้า Booking page
+import 'home.dart'; // นำเข้า Home page
+// นำเข้า ServiceProvider
 
 class Detail extends StatelessWidget {
   final List<Map<String, dynamic>> selectedServices;
   final List<int> selectedPrices;
+  final Map serviceQuantities;
 
-  Detail({required this.selectedServices, required this.selectedPrices});
+  // รับข้อมูลจาก constructor
+  Detail({
+    required this.selectedServices,
+    required this.selectedPrices,
+    required this.serviceQuantities,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // การคำนวณราคาทั้งหมดในหน้า Detail
+    // ดึงข้อมูลจาก ServiceProvider
+    final provider = Provider.of<ServiceProvider>(context);
+
+    // คำนวณราคาทั้งหมดจากราคาของบริการ
     int totalPrice = selectedPrices.fold(0, (prev, amount) => prev + amount);
 
     return Scaffold(
@@ -24,6 +35,17 @@ class Detail extends StatelessWidget {
         backgroundColor: Colors.blue[50],
         iconTheme: IconThemeData(color: Colors.blue[700]),
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.blue[700]),
+          onPressed: () {
+            // นำผู้ใช้กลับไปยังหน้า Home
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(color: Colors.blue[50]),
@@ -42,7 +64,7 @@ class Detail extends StatelessWidget {
             SizedBox(height: 10.0),
             Expanded(
               child: ListView.builder(
-                itemCount: selectedServices.length,
+                itemCount: selectedServices.length, // จำนวนบริการที่เลือก
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.white,
@@ -51,12 +73,11 @@ class Detail extends StatelessWidget {
                     ),
                     child: ListTile(
                       title: Text(
-                        selectedServices[index]
-                            ['service'], // ใช้ชื่อบริการจาก selectedServices
+                        selectedServices[index]['service'], // ชื่อบริการ
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                       trailing: Text(
-                        '${selectedPrices[index]}฿', // แสดงราคาจาก selectedPrices
+                        '${selectedPrices[index]}฿', // ราคาของบริการ
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                     ),
@@ -78,7 +99,7 @@ class Detail extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "$totalPrice฿",
+                  "$totalPrice฿", // แสดงราคาทั้งหมด
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
@@ -90,7 +111,19 @@ class Detail extends StatelessWidget {
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                // Code to navigate to the next screen
+                // นำข้อมูลที่เลือกไปยังหน้า Booking
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Booking(
+                      selectedServices: selectedServices,
+                      totalPrice: totalPrice,
+                      selectedPrices: selectedPrices,
+                      service: '',
+                      price: '',
+                    ),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
