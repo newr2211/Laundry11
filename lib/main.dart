@@ -21,7 +21,7 @@ void main() async {
   );
   runApp(
     ChangeNotifierProvider(
-      create: (_) => ServiceProvider(),
+      create: (context) => ServiceProvider(),
       child: MyApp(),
     ),
   );

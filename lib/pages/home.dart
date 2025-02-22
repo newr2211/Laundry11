@@ -23,6 +23,8 @@ class _HomeState extends State<Home> {
   String userName = "User";
   bool isLoading = true;
   int _currentIndex = 0;
+  List<Map<String, dynamic>> selectedServices = [];
+  List<int> selectedPrices = [];
 
   @override
   void initState() {
@@ -78,9 +80,14 @@ class _HomeState extends State<Home> {
         context,
         MaterialPageRoute(
           builder: (context) => Detail(
-            selectedServices: [],
-            selectedPrices: [],
-            serviceQuantities: {},
+            selectedServices: selectedServices,
+            selectedPrices: selectedPrices,
+            onBack: (newSelectedServices, newSelectedPrices) {
+              setState(() {
+                selectedServices = newSelectedServices;
+                selectedPrices = newSelectedPrices;
+              });
+            },
           ),
         ),
       );

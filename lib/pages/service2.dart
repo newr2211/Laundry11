@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:Laundry/services/serviceProvider.dart';
-import 'package:Laundry/pages/detail.dart';
 
 class Service2 extends StatefulWidget {
   @override
@@ -9,7 +6,6 @@ class Service2 extends StatefulWidget {
 }
 
 class _Service2State extends State<Service2> {
-  int quantity = 1;
   int pricePerItem = 0;
 
   Map<String, int> serviceQuantities = {
@@ -24,31 +20,12 @@ class _Service2State extends State<Service2> {
     "ทำความสะอาดด้วยเทคนิคพิเศษ": 200,
   };
 
-  Map<String, TextEditingController> serviceControllers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    serviceQuantities.keys.forEach((service) {
-      serviceControllers[service] = TextEditingController();
-    });
-  }
-
-  @override
-  void dispose() {
-    serviceControllers.forEach((key, controller) {
-      controller.dispose();
-    });
-    super.dispose();
-  }
-
   int get totalPrice {
-    int basePrice = quantity * pricePerItem;
     int extraServicesPrice = serviceQuantities.entries
         .map(
             (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
         .fold(0, (prev, amount) => prev + amount);
-    return basePrice + extraServicesPrice;
+    return extraServicesPrice;
   }
 
   void updateServiceQuantity(String service, int change) {
@@ -67,37 +44,42 @@ class _Service2State extends State<Service2> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset("images/44.png", height: 35),
-                SizedBox(width: 10),
-                Text("ซักรองเท้า",
-                    style:
-                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset("images/21.png", height: 35),
-                SizedBox(width: 10),
-                Icon(Icons.add),
-                SizedBox(width: 10),
-                Image.asset("images/22.png", height: 35),
-                SizedBox(width: 10),
-                Icon(Icons.add),
-                SizedBox(width: 10),
-                Image.asset("images/23.png", height: 35),
-                SizedBox(width: 10),
-                Icon(Icons.add),
-                SizedBox(width: 10),
-                Image.asset("images/24.png", height: 35),
-              ],
-            ),
-            SizedBox(height: 20),
+            // เพิ่มส่วนของบริการที่เหลือให้เหมือนกับ "ซักรองเท้า"
             for (var service in serviceQuantities.keys) ...[
+              if (service == "ซักรองเท้า") ...[
+                // แสดง "ซักรองเท้า" แค่ครั้งเดียว
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("images/44.png", height: 35),
+                    SizedBox(width: 10),
+                    Text("ซักรองเท้า",
+                        style: TextStyle(
+                            fontSize: 40, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("images/21.png", height: 35),
+                    SizedBox(width: 10),
+                    Icon(Icons.add),
+                    SizedBox(width: 10),
+                    Image.asset("images/22.png", height: 35),
+                    SizedBox(width: 10),
+                    Icon(Icons.add),
+                    SizedBox(width: 10),
+                    Image.asset("images/23.png", height: 35),
+                    SizedBox(width: 10),
+                    Icon(Icons.add),
+                    SizedBox(width: 10),
+                    Image.asset("images/24.png", height: 35),
+                  ],
+                ),
+                SizedBox(height: 20),
+              ],
+              // เพิ่มสวิตช์และเลือกจำนวนบริการอื่นๆ
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
                   serviceQuantities[service] = value ? 1 : 0;
@@ -116,39 +98,11 @@ class _Service2State extends State<Service2> {
       ),
       bottomNavigationBar: ElevatedButton(
         onPressed: () {
-          // สร้างรายการบริการที่เลือกและราคาที่เกี่ยวข้อง
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
-
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service,
-                'quantity': quantity,
-                'price': servicePrices[service] ?? pricePerItem,
-                'total': servicePrices[service]! * quantity,
-              });
-              selectedPrices.add(
-                  servicePrices[service]! * quantity); // เพิ่มราคาที่คำนวณแล้ว
-            }
-          });
-
-          // ใช้ Provider เพื่อเก็บข้อมูลที่เลือก
-          selectedServices.forEach((service) {
-            context
-                .read<ServiceProvider>()
-                .addService(service, service['price']);
-          });
-
-          // ใช้ Navigator.push เพื่อไปที่หน้า DetailPage พร้อมข้อมูล
+          // เพิ่มการนำทางไปยังหน้าใหม่ (หน้า Detail หรือ Cart)
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                serviceQuantities: {}, // ส่งรายการราคาที่คำนวณแล้ว
-              ),
+              builder: (context) => DetailScreen(cart: serviceQuantities),
             ),
           );
         },
@@ -216,6 +170,33 @@ class _Service2State extends State<Service2> {
             onChanged: onChanged,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// หน้า DetailScreen หรือ Cart
+class DetailScreen extends StatelessWidget {
+  final Map<String, int> cart;
+  DetailScreen({required this.cart});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("รายละเอียดตะกร้า")),
+      body: ListView(
+        children: cart.entries
+            .map((entry) => ListTile(
+                  title: Text(entry.key),
+                  subtitle: Text("จำนวน: ${entry.value}"),
+                ))
+            .toList(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pop(context); // กลับไปหน้าหลัก
+        },
+        child: Icon(Icons.arrow_back),
       ),
     );
   }

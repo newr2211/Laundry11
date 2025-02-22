@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:Laundry/services/serviceProvider.dart';
-import 'package:provider/provider.dart';
-import 'package:Laundry/pages/detail.dart';
 
 class Service5 extends StatefulWidget {
   @override
@@ -9,7 +6,6 @@ class Service5 extends StatefulWidget {
 }
 
 class _Service5State extends State<Service5> {
-  int quantity = 1;
   int pricePerItem = 0;
 
   Map<String, int> serviceQuantities = {
@@ -26,31 +22,12 @@ class _Service5State extends State<Service5> {
     "เน็คไท,ผ้าพันคอ": 50,
   };
 
-  Map<String, TextEditingController> serviceControllers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    serviceQuantities.keys.forEach((service) {
-      serviceControllers[service] = TextEditingController();
-    });
-  }
-
-  @override
-  void dispose() {
-    serviceControllers.forEach((key, controller) {
-      controller.dispose();
-    });
-    super.dispose();
-  }
-
   int get totalPrice {
-    int basePrice = quantity * pricePerItem;
     int extraServicesPrice = serviceQuantities.entries
         .map(
             (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
         .fold(0, (prev, amount) => prev + amount);
-    return basePrice + extraServicesPrice;
+    return extraServicesPrice;
   }
 
   void updateServiceQuantity(String service, int change) {
@@ -69,6 +46,7 @@ class _Service5State extends State<Service5> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // แสดงหัวข้อของบริการ
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -99,6 +77,8 @@ class _Service5State extends State<Service5> {
               ],
             ),
             SizedBox(height: 20),
+
+            // เพิ่มส่วนของบริการที่เหลือให้เหมือนกับ "ซัก-พับ"
             for (var service in serviceQuantities.keys) ...[
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
@@ -117,43 +97,7 @@ class _Service5State extends State<Service5> {
         ),
       ),
       bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // สร้างรายการบริการที่เลือกและราคาที่เกี่ยวข้อง
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
-
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service,
-                'quantity': quantity,
-                'price': servicePrices[service] ?? pricePerItem,
-                'total': servicePrices[service]! * quantity,
-              });
-              selectedPrices.add(
-                  servicePrices[service]! * quantity); // เพิ่มราคาที่คำนวณแล้ว
-            }
-          });
-
-          // ใช้ Provider เพื่อเก็บข้อมูลที่เลือก
-          selectedServices.forEach((service) {
-            context
-                .read<ServiceProvider>()
-                .addService(service, service['price']);
-          });
-
-          // ใช้ Navigator.push เพื่อไปที่หน้า DetailPage พร้อมข้อมูล
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                serviceQuantities: {}, // ส่งรายการราคาที่คำนวณแล้ว
-              ),
-            ),
-          );
-        },
+        onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           padding: EdgeInsets.symmetric(vertical: 15),

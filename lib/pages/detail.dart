@@ -1,49 +1,36 @@
-import 'package:Laundry/services/serviceProvider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // นำเข้า Provider
-import 'booking.dart'; // นำเข้า Booking page
-import 'home.dart'; // นำเข้า Home page
-// นำเข้า ServiceProvider
 
 class Detail extends StatelessWidget {
   final List<Map<String, dynamic>> selectedServices;
   final List<int> selectedPrices;
-  final Map serviceQuantities;
+  final Function(List<Map<String, dynamic>>, List<int>) onBack;
 
-  // รับข้อมูลจาก constructor
   Detail({
     required this.selectedServices,
     required this.selectedPrices,
-    required this.serviceQuantities,
+    required this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
-    // ดึงข้อมูลจาก ServiceProvider
-    final provider = Provider.of<ServiceProvider>(context);
-
-    // คำนวณราคาทั้งหมดจากราคาของบริการ
     int totalPrice = selectedPrices.fold(0, (prev, amount) => prev + amount);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "รายละเอียดการจอง",
-          style:
-              TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
-        ),
+        title: Text("รายละเอียดการจอง",
+            style: TextStyle(
+                color: Colors.blue[700], fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue[50],
         iconTheme: IconThemeData(color: Colors.blue[700]),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.blue[700]),
+          icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // นำผู้ใช้กลับไปยังหน้า Home
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => Home()),
-              (Route<dynamic> route) => false,
-            );
+            // ส่งข้อมูลกลับไปที่หน้า Home
+            onBack(selectedServices, selectedPrices);
+            Navigator.pop(context);
           },
         ),
       ),
@@ -64,7 +51,7 @@ class Detail extends StatelessWidget {
             SizedBox(height: 10.0),
             Expanded(
               child: ListView.builder(
-                itemCount: selectedServices.length, // จำนวนบริการที่เลือก
+                itemCount: selectedServices.length,
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.white,
@@ -73,11 +60,11 @@ class Detail extends StatelessWidget {
                     ),
                     child: ListTile(
                       title: Text(
-                        selectedServices[index]['service'], // ชื่อบริการ
+                        selectedServices[index]['service'],
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                       trailing: Text(
-                        '${selectedPrices[index]}฿', // ราคาของบริการ
+                        '${selectedPrices[index]}฿',
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
                     ),
@@ -99,7 +86,7 @@ class Detail extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "$totalPrice฿", // แสดงราคาทั้งหมด
+                  "$totalPrice฿",
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
@@ -111,19 +98,7 @@ class Detail extends StatelessWidget {
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                // นำข้อมูลที่เลือกไปยังหน้า Booking
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Booking(
-                      selectedServices: selectedServices,
-                      totalPrice: totalPrice,
-                      selectedPrices: selectedPrices,
-                      service: '',
-                      price: '',
-                    ),
-                  ),
-                );
+                // Code to navigate to the next screen
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
