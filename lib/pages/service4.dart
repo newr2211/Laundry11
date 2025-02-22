@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Laundry/pages/detail.dart'; // Import the detail page
 
 class Service4 extends StatefulWidget {
   @override
@@ -48,7 +49,6 @@ class _Service4State extends State<Service4> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // เพิ่มส่วนของ "เครื่องนอนและอื่นๆ" ที่เหมือนกับ "ซัก-พับ"
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -79,9 +79,7 @@ class _Service4State extends State<Service4> {
               ],
             ),
             SizedBox(height: 20),
-            // เพิ่มส่วนของบริการที่เหลือ
             for (var service in serviceQuantities.keys) ...[
-              // เพิ่ม switch และ quantity selector สำหรับแต่ละบริการ
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
                   serviceQuantities[service] = value ? 1 : 0;
@@ -99,7 +97,39 @@ class _Service4State extends State<Service4> {
         ),
       ),
       bottomNavigationBar: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // Create a list of selected services and their prices
+          List<Map<String, dynamic>> selectedServices = [];
+          List<int> selectedPrices = [];
+
+          serviceQuantities.forEach((service, quantity) {
+            if (quantity > 0) {
+              selectedServices.add({
+                'service': service,
+                'price': servicePrices[service]!,
+                'quantity': quantity,
+              });
+              selectedPrices.add(servicePrices[service]! * quantity);
+            }
+          });
+
+          // Pass selected services and prices to the Detail page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Detail(
+                selectedServices: selectedServices,
+                selectedPrices: selectedPrices,
+                onBack: (List<Map<String, dynamic>> updatedServices,
+                    List<int> updatedPrices) {
+                  // Handle any data updates if needed
+                  print(updatedServices);
+                  print(updatedPrices);
+                },
+              ),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           padding: EdgeInsets.symmetric(vertical: 15),

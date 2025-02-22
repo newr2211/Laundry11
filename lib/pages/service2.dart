@@ -1,3 +1,4 @@
+import 'package:Laundry/pages/detail.dart';
 import 'package:flutter/material.dart';
 
 class Service2 extends StatefulWidget {
@@ -21,11 +22,10 @@ class _Service2State extends State<Service2> {
   };
 
   int get totalPrice {
-    int extraServicesPrice = serviceQuantities.entries
+    return serviceQuantities.entries
         .map(
             (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
         .fold(0, (prev, amount) => prev + amount);
-    return extraServicesPrice;
   }
 
   void updateServiceQuantity(String service, int change) {
@@ -44,10 +44,10 @@ class _Service2State extends State<Service2> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // เพิ่มส่วนของบริการที่เหลือให้เหมือนกับ "ซักรองเท้า"
+            // Add service sections like "ซักรองเท้า"
             for (var service in serviceQuantities.keys) ...[
               if (service == "ซักรองเท้า") ...[
-                // แสดง "ซักรองเท้า" แค่ครั้งเดียว
+                // Show "ซักรองเท้า" only once
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -79,7 +79,7 @@ class _Service2State extends State<Service2> {
                 ),
                 SizedBox(height: 20),
               ],
-              // เพิ่มสวิตช์และเลือกจำนวนบริการอื่นๆ
+              // Add switch and quantity selector for other services
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
                   serviceQuantities[service] = value ? 1 : 0;
@@ -98,11 +98,33 @@ class _Service2State extends State<Service2> {
       ),
       bottomNavigationBar: ElevatedButton(
         onPressed: () {
-          // เพิ่มการนำทางไปยังหน้าใหม่ (หน้า Detail หรือ Cart)
+          // สร้างรายการบริการที่เลือก
+          List<Map<String, dynamic>> selectedServices = [];
+          List<int> selectedPrices = [];
+
+          serviceQuantities.forEach((service, quantity) {
+            if (quantity > 0) {
+              selectedServices.add({
+                'service': service, // ชื่อบริการ
+              });
+              selectedPrices.add(servicePrices[service]! * quantity); // ราคา
+            }
+          });
+
+          // นำข้อมูลไปที่หน้า Detail (ใช้ Detail ที่คุณสร้างไว้แล้ว)
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DetailScreen(cart: serviceQuantities),
+              builder: (context) => Detail(
+                selectedServices: selectedServices,
+                selectedPrices: selectedPrices,
+                onBack: (List<Map<String, dynamic>> selectedServices,
+                    List<int> selectedPrices) {
+                  // ที่นี่คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
+                  print(selectedServices);
+                  print(selectedPrices);
+                },
+              ),
             ),
           );
         },
@@ -170,33 +192,6 @@ class _Service2State extends State<Service2> {
             onChanged: onChanged,
           ),
         ],
-      ),
-    );
-  }
-}
-
-// หน้า DetailScreen หรือ Cart
-class DetailScreen extends StatelessWidget {
-  final Map<String, int> cart;
-  DetailScreen({required this.cart});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("รายละเอียดตะกร้า")),
-      body: ListView(
-        children: cart.entries
-            .map((entry) => ListTile(
-                  title: Text(entry.key),
-                  subtitle: Text("จำนวน: ${entry.value}"),
-                ))
-            .toList(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pop(context); // กลับไปหน้าหลัก
-        },
-        child: Icon(Icons.arrow_back),
       ),
     );
   }

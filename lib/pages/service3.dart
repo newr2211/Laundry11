@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Laundry/pages/detail.dart'; // Import the Detail page
 
 class Service3 extends StatefulWidget {
   @override
@@ -95,7 +96,35 @@ class _Service3State extends State<Service3> {
         ),
       ),
       bottomNavigationBar: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // เก็บบริการที่เลือก
+          List<Map<String, dynamic>> selectedServices = [];
+          List<int> selectedPrices = [];
+
+          serviceQuantities.forEach((service, quantity) {
+            if (quantity > 0) {
+              selectedServices.add({'service': service});
+              selectedPrices.add(servicePrices[service]! * quantity);
+            }
+          });
+
+          // นำข้อมูลไปที่หน้า Detail
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Detail(
+                selectedServices: selectedServices,
+                selectedPrices: selectedPrices,
+                onBack: (List<Map<String, dynamic>> selectedServices,
+                    List<int> selectedPrices) {
+                  // คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
+                  print(selectedServices);
+                  print(selectedPrices);
+                },
+              ),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           padding: EdgeInsets.symmetric(vertical: 15),
