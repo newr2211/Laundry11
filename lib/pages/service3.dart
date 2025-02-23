@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Laundry/pages/detail.dart'; // Import the Detail page
+import 'package:provider/provider.dart';
+import '../services/cart_service.dart';
+import 'detail.dart'; // Import CartService
 
 class Service3 extends StatefulWidget {
   @override
@@ -12,7 +14,7 @@ class _Service3State extends State<Service3> {
   Map<String, int> serviceQuantities = {
     "เสื้อผ้าไม่กึงทางการ": 0,
     "เสื้อผ้ากึ่งทางการ": 0,
-    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก,เสื้อกั๊กชั้นนอก": 0,
+    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก": 0,
     "กางเกงสูท,กางเกง,กระโปรง": 0,
     "ชุดเดรส,จั๊มป์สูท,กระโปรง": 0,
     "เน็คไท,ผ้าพันคอ": 0,
@@ -21,7 +23,7 @@ class _Service3State extends State<Service3> {
   Map<String, int> servicePrices = {
     "เสื้อผ้าไม่กึงทางการ": 25,
     "เสื้อผ้ากึ่งทางการ": 30,
-    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก,เสื้อกั๊กชั้นนอก": 45,
+    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก": 45,
     "กางเกงสูท,กางเกง,กระโปรง": 45,
     "ชุดเดรส,จั๊มป์สูท,กระโปรง": 45,
     "เน็คไท,ผ้าพันคอ": 25,
@@ -44,40 +46,45 @@ class _Service3State extends State<Service3> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartService>(context); // Access CartService
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.only(left: 20, top: 60, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // แสดงหัวข้อของบริการ
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("images/31.png", height: 35),
+                Image.asset("images/77.png", height: 35),
                 SizedBox(width: 10),
-                Text("รีดเท่านั้น",
-                    style:
-                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                Text("รีดเท่านั้น", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("images/31.png", height: 35),
+                Image.asset("images/11.png", height: 35),
                 SizedBox(width: 10),
                 Icon(Icons.add),
                 SizedBox(width: 10),
-                Image.asset("images/32.png", height: 35),
+                Image.asset("images/12.png", height: 35),
                 SizedBox(width: 10),
                 Icon(Icons.add),
                 SizedBox(width: 10),
-                Image.asset("images/33.png", height: 35),
+                Image.asset("images/13.png", height: 35),
                 SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/14.png", height: 35),
               ],
             ),
             SizedBox(height: 20),
+
             for (var service in serviceQuantities.keys) ...[
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
@@ -88,52 +95,38 @@ class _Service3State extends State<Service3> {
                 _buildQuantitySelector(
                     service,
                     serviceQuantities[service]!,
-                    (val) => updateServiceQuantity(
+                        (val) => updateServiceQuantity(
                         service, val - serviceQuantities[service]!)),
               SizedBox(height: 10),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // เก็บบริการที่เลือก
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          onPressed: () {
+            // Add selected items to the cart
+            serviceQuantities.forEach((service, quantity) {
+              if (quantity > 0) {
+                cart.addItem(service, servicePrices[service]! * quantity);
+              }
+            });
 
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({'service': service});
-              selectedPrices.add(servicePrices[service]! * quantity);
-            }
-          });
-
-          // นำข้อมูลไปที่หน้า Detail
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                onBack: (List<Map<String, dynamic>> selectedServices,
-                    List<int> selectedPrices) {
-                  // คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
-                  print(selectedServices);
-                  print(selectedPrices);
-                },
-                onAddService: (String service, int price) {},
-              ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            // Navigate to CartScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CartScreen()),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+              style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }

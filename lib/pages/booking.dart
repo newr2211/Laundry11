@@ -70,7 +70,7 @@ class _BookingState extends State<Booking> {
 
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked =
-        await showTimePicker(context: context, initialTime: _selectedTime);
+    await showTimePicker(context: context, initialTime: _selectedTime);
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
@@ -88,11 +88,11 @@ class _BookingState extends State<Booking> {
     }
 
     Map<String, dynamic> userBookingMap = {
-      "Services": widget.selectedServices, // ข้อมูลบริการที่เลือกยังคงอยู่
-      "Prices": widget.selectedPrices, // ข้อมูลราคายังอยู่
-      "TotalPrice": widget.totalPrice, // ยอดรวมยังคงอยู่
-      "Date": _selectedDate.toString().split(' ')[0],
-      "Time": _selectedTime.format(context),
+      "Services": widget.selectedServices, // ข้อมูลบริการที่เลือก
+      "Prices": widget.selectedPrices, // ข้อมูลราคาบริการ
+      "TotalPrice": widget.totalPrice, // ยอดรวม
+      "Date": _selectedDate.toString().split(' ')[0], // วัน
+      "Time": _selectedTime.format(context), // เวลา
       "Username": name,
       "Email": email,
       "DeliveryAddress": deliveryAddress ?? '',
@@ -123,23 +123,25 @@ class _BookingState extends State<Booking> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  SizedBox(height: 30.0),
-                  _buildDatePicker(),
-                  SizedBox(height: 20.0),
-                  _buildTimePicker(),
-                  SizedBox(height: 20.0),
-                  _buildDeliveryAddressField(),
-                  SizedBox(height: 40.0),
-                  _buildBookButton(),
-                ],
-              ),
-            ),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              SizedBox(height: 30.0),
+              _buildDatePicker(),
+              SizedBox(height: 20.0),
+              _buildTimePicker(),
+              SizedBox(height: 20.0),
+              _buildDeliveryAddressField(),
+              SizedBox(height: 40.0),
+              _buildBookButton(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -179,9 +181,9 @@ class _BookingState extends State<Booking> {
             onDaySelected: (day, _) => setState(() => _selectedDate = day),
             calendarStyle: CalendarStyle(
               selectedDecoration:
-                  BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+              BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
               todayDecoration:
-                  BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
+              BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
             ),
           ),
         ],
@@ -217,16 +219,20 @@ class _BookingState extends State<Booking> {
       padding: EdgeInsets.all(15.0),
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(15)),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: "กรอกที่อยู่สำหรับจัดส่ง",
-          border: InputBorder.none,
-        ),
-        onChanged: (value) {
-          setState(() {
-            deliveryAddress = value;
-          });
-        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("ที่อยู่จัดส่ง",
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+          TextField(
+            onChanged: (value) => setState(() {
+              deliveryAddress = value;
+            }),
+            decoration: InputDecoration(
+                hintText: "กรุณากรอกที่อยู่ของคุณ",
+                border: OutlineInputBorder()),
+          ),
+        ],
       ),
     );
   }
@@ -235,11 +241,17 @@ class _BookingState extends State<Booking> {
     return ElevatedButton(
       onPressed: _bookService,
       style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 40.0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         backgroundColor: Colors.orange,
-        padding: EdgeInsets.symmetric(vertical: 15.0),
       ),
-      child: Center(
-        child: Text("จองเลย!"),
+      child: Text(
+        "จองบริการ",
+        style: TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
     );
   }

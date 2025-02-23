@@ -72,10 +72,16 @@ class _HomeState extends State<Home> {
   }
 
   void onTabTapped(int index) {
-    if (index == 1) {
+    if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => BookingHistory()),
+      );
+    }
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CartScreen()),
       );
     }
   }
@@ -152,7 +158,7 @@ class _HomeState extends State<Home> {
                           );
                         },
                         child: Container(
-                          width: 150,
+                          width: MediaQuery.of(context).size.width * .4,
                           height: 150,
                           color: Colors.blue[700],
                           child: Center(
@@ -183,7 +189,7 @@ class _HomeState extends State<Home> {
                           );
                         },
                         child: Container(
-                          width: 150,
+                          width: MediaQuery.of(context).size.width * .4,
                           height: 150,
                           color: Colors.pinkAccent,
                           child: Center(
@@ -220,7 +226,7 @@ class _HomeState extends State<Home> {
                           );
                         },
                         child: Container(
-                          width: 150,
+                          width: MediaQuery.of(context).size.width * .4,
                           height: 150,
                           color: Colors.cyanAccent,
                           child: Center(
@@ -234,7 +240,7 @@ class _HomeState extends State<Home> {
                                   height: 50,
                                 ),
                                 SizedBox(height: 10), // เพิ่มระยะห่าง
-                                Text('รีดเทานั้น',
+                                Text('รีดเท่านั้น',
                                     style: TextStyle(fontSize: 18)),
                               ],
                             ),
@@ -252,7 +258,7 @@ class _HomeState extends State<Home> {
                           );
                         },
                         child: Container(
-                          width: 150,
+                          width: MediaQuery.of(context).size.width * .4,
                           height: 150,
                           color: Colors.yellowAccent,
                           child: Center(
@@ -289,7 +295,7 @@ class _HomeState extends State<Home> {
                           );
                         },
                         child: Container(
-                          width: 150,
+                          width: MediaQuery.of(context).size.width * .4,
                           height: 150,
                           color: Colors.blueGrey,
                           child: Center(
@@ -322,6 +328,10 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'หน้าหลัก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag_rounded),
+            label: 'ตะกร้าของฉัน',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),

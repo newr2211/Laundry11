@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Laundry/pages/detail.dart'; // Import your existing Detail page
+import 'package:provider/provider.dart';
+import '../services/cart_service.dart';
+import 'detail.dart';  // Import the cart service
 
 class Service5 extends StatefulWidget {
   @override
@@ -10,14 +12,14 @@ class _Service5State extends State<Service5> {
   int pricePerItem = 0;
 
   Map<String, int> serviceQuantities = {
-    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก,เสื้อกั๊กชั้นนอก": 0,
+    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก": 0,
     "กางเกงสูท,กางเกง,กระโปรง": 0,
     "เสื้อโค้ท,แจ็คเก็ต,ชุดกระโปรง": 0,
     "เน็คไท,ผ้าพันคอ": 0,
   };
 
   Map<String, int> servicePrices = {
-    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก,เสื้อกั๊กชั้นนอก": 95,
+    "เสื้อแจ็คเก็ตสูท,เสื้อกั๊ก": 95,
     "กางเกงสูท,กางเกง,กระโปรง": 95,
     "เสื้อโค้ท,แจ็คเก็ต,ชุดกระโปรง": 200,
     "เน็คไท,ผ้าพันคอ": 50,
@@ -25,25 +27,26 @@ class _Service5State extends State<Service5> {
 
   int get totalPrice {
     int extraServicesPrice = serviceQuantities.entries
-        .map(
-            (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
+        .map((entry) =>
+    entry.value * (servicePrices[entry.key] ?? pricePerItem))
         .fold(0, (prev, amount) => prev + amount);
     return extraServicesPrice;
   }
 
   void updateServiceQuantity(String service, int change) {
     setState(() {
-      serviceQuantities[service] =
-          (serviceQuantities[service]! + change).clamp(0, 99);
+      serviceQuantities[service] = (serviceQuantities[service]! + change).clamp(0, 99);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartService>(context);  // Access CartService
+
     return Scaffold(
       backgroundColor: Colors.blue[50],
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.only(left: 20, top: 60, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -53,9 +56,7 @@ class _Service5State extends State<Service5> {
               children: [
                 Image.asset("images/77.png", height: 35),
                 SizedBox(width: 10),
-                Text("ซักชุดสูท",
-                    style:
-                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                Text("ซักชุดสูท", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 20),
@@ -90,60 +91,41 @@ class _Service5State extends State<Service5> {
                 _buildQuantitySelector(
                     service,
                     serviceQuantities[service]!,
-                    (val) => updateServiceQuantity(
-                        service, val - serviceQuantities[service]!)),
-              SizedBox(height: 10),
+                        (val) => updateServiceQuantity(service, val - serviceQuantities[service]!)),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // สร้างรายการบริการที่เลือก
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          onPressed: () {
+            // Add the selected services to the cart
+            serviceQuantities.forEach((service, quantity) {
+              if (quantity > 0) {
+                int price = servicePrices[service] ?? pricePerItem;
+                cart.addItem(service, price * quantity);  // Add to cart
+              }
+            });
 
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service, // ชื่อบริการ
-              });
-              selectedPrices.add(servicePrices[service]! * quantity); // ราคา
-            }
-          });
-
-          // นำข้อมูลไปที่หน้า Detail
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                onBack: (List<Map<String, dynamic>> selectedServices,
-                    List<int> selectedPrices) {
-                  // ที่นี่คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
-                  print(selectedServices);
-                  print(selectedPrices);
-                },
-                onAddService: (String service, int price) {},
-              ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            // Navigate to CartScreen to view the cart
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CartScreen()),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice", style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
 
-  Widget _buildQuantitySelector(
-      String label, int quantity, Function(int) onQuantityChanged) {
+  Widget _buildQuantitySelector(String label, int quantity, Function(int) onQuantityChanged) {
     int itemPrice = servicePrices[label] ?? pricePerItem;
 
     return Container(
@@ -160,16 +142,11 @@ class _Service5State extends State<Service5> {
           Row(
             children: [
               Text("฿${quantity * itemPrice}",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue)),
               Spacer(),
               IconButton(
                   icon: Icon(Icons.remove),
-                  onPressed: quantity > 0
-                      ? () => onQuantityChanged(quantity - 1)
-                      : null),
+                  onPressed: quantity > 0 ? () => onQuantityChanged(quantity - 1) : null),
               Text("$quantity", style: TextStyle(fontSize: 18)),
               IconButton(
                   icon: Icon(Icons.add),
@@ -187,8 +164,7 @@ class _Service5State extends State<Service5> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           Switch(
             value: value,
             onChanged: onChanged,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Laundry/pages/detail.dart'; // Import the detail page
+import 'package:provider/provider.dart';
+import '../services/cart_service.dart';
+import 'detail.dart'; // Import CartService
 
 class Service4 extends StatefulWidget {
   @override
@@ -42,10 +44,12 @@ class _Service4State extends State<Service4> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartService>(context); // Access CartService
+
     return Scaffold(
       backgroundColor: Colors.blue[50],
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.only(left: 20, top: 60, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -56,7 +60,7 @@ class _Service4State extends State<Service4> {
                 SizedBox(width: 10),
                 Text("เครื่องนอนและอื่นๆ",
                     style:
-                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                    TextStyle(fontSize: 38, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 20),
@@ -89,56 +93,38 @@ class _Service4State extends State<Service4> {
                 _buildQuantitySelector(
                     service,
                     serviceQuantities[service]!,
-                    (val) => updateServiceQuantity(
+                        (val) => updateServiceQuantity(
                         service, val - serviceQuantities[service]!)),
-              SizedBox(height: 10),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // Create a list of selected services and their prices
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          onPressed: () {
+            // Add selected services to the cart
+            serviceQuantities.forEach((service, quantity) {
+              if (quantity > 0) {
+                cart.addItem(service, servicePrices[service]! * quantity);
+              }
+            });
 
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service,
-                'price': servicePrices[service]!,
-                'quantity': quantity,
-              });
-              selectedPrices.add(servicePrices[service]! * quantity);
-            }
-          });
-
-          // Pass selected services and prices to the Detail page
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                onBack: (List<Map<String, dynamic>> updatedServices,
-                    List<int> updatedPrices) {
-                  // Handle any data updates if needed
-                  print(updatedServices);
-                  print(updatedPrices);
-                },
-                onAddService: (String service, int price) {},
-              ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            // Navigate to CartScreen to view the added items
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CartScreen()),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+              style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }

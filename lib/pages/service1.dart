@@ -1,5 +1,7 @@
-import 'package:Laundry/pages/detail.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/cart_service.dart';
+import 'detail.dart';  // ใช้หน้า CartScreen สำหรับแสดงรายการตะกร้า
 
 class Service1 extends StatefulWidget {
   @override
@@ -7,7 +9,6 @@ class Service1 extends StatefulWidget {
 }
 
 class _Service1State extends State<Service1> {
-  int pricePerItem = 0;
   Map<String, int> serviceQuantities = {
     "ซัก-พับ": 0,
     "รีดผ้า": 0,
@@ -26,95 +27,49 @@ class _Service1State extends State<Service1> {
     "ให้ยีนส์ยิ่งน้ำเงิน": 25,
   };
 
-  List<String> selectedServices = []; // เก็บบริการที่เลือก
-  List<int> selectedServicePrices = []; // เก็บราคาของบริการที่เลือก
-
-  int get totalPrice {
-    return selectedServicePrices.fold(0, (prev, price) => prev + price);
-  }
-
-  @override
-  void updateServiceQuantity(String service, int change) {
-    setState(() {
-      serviceQuantities[service] =
-          (serviceQuantities[service]! + change).clamp(0, 99);
-
-      // คำนวณราคาของบริการที่เลือกใหม่ตามจำนวนที่เปลี่ยน
-      if (serviceQuantities[service]! > 0) {
-        int index = selectedServices.indexOf(service);
-        if (index == -1) {
-          selectedServices.add(service);
-          selectedServicePrices
-              .add(servicePrices[service]! * serviceQuantities[service]!);
-        } else {
-          selectedServicePrices[index] =
-              servicePrices[service]! * serviceQuantities[service]!;
-        }
-      } else {
-        int index = selectedServices.indexOf(service);
-        if (index != -1) {
-          selectedServices.removeAt(index);
-          selectedServicePrices.removeAt(index);
-        }
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.only(left: 20, top: 60, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // เพิ่มส่วนของบริการที่เหลือให้เหมือนกับ "ซัก-พับ"
-            for (var service in serviceQuantities.keys) ...[
-              if (service == "ซัก-พับ") ...[
-                // แสดง "ซัก-พับ" แค่ครั้งเดียว
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("images/111.png", height: 35),
-                    SizedBox(width: 10),
-                    Text("ซัก-พับ",
-                        style: TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("images/112.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/113.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/114.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/115.png", height: 35),
-                  ],
-                ),
-                SizedBox(height: 20),
+            // แสดงหัวข้อของบริการ
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("images/77.png", height: 35),
+                SizedBox(width: 10),
+                Text("ซัก-พับ", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ],
-              // เพิ่มสวิตช์และเลือกจำนวนบริการอื่นๆ
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("images/11.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/12.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/13.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/14.png", height: 35),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            for (var service in serviceQuantities.keys) ...[
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
-                  if (value) {
-                    // เพิ่มค่าปัจจุบันเข้าไปแทนที่จะรีเซ็ต
-                    serviceQuantities[service] =
-                        (serviceQuantities[service] ?? 0) + 1;
-                  } else {
-                    // หากไม่เลือก บริการนั้นจะถูกตั้งค่าเป็น 0
-                    serviceQuantities[service] = 0;
-                  }
+                  serviceQuantities[service] = value ? 1 : 0;
                 });
               }),
 
@@ -122,61 +77,49 @@ class _Service1State extends State<Service1> {
                 _buildQuantitySelector(
                     service,
                     serviceQuantities[service]!,
-                    (val) => updateServiceQuantity(
-                        service, val - serviceQuantities[service]!)),
-              SizedBox(height: 20),
+                        (val) => setState(() {
+                      serviceQuantities[service] = val;
+                    })),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // สร้างรายการบริการที่เลือก
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          onPressed: () {
+            // เพิ่มบริการไปที่ CartService
+            final cart = Provider.of<CartService>(context, listen: false);
 
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service, // ชื่อบริการ
-              });
-              selectedPrices.add(servicePrices[service]! * quantity); // ราคา
-            }
-          });
+            serviceQuantities.forEach((service, quantity) {
+              if (quantity > 0) {
+                cart.addItem(service, servicePrices[service]! * quantity);
+              }
+            });
 
-          // นำข้อมูลไปที่หน้า Detail
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                onBack: (List<Map<String, dynamic>> selectedServices,
-                    List<int> selectedPrices) {
-                  // ที่นี่คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
-                  print(selectedServices);
-                  print(selectedPrices);
-                },
-                onAddService: (String service, int price) {},
+            // นำไปที่หน้าจอ Cart
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CartScreen(),
               ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text("เพิ่มไปยังตะกร้า",
+              style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: Text("เพิ่มไปยังตะกร้า",
-            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
 
   Widget _buildQuantitySelector(
       String label, int quantity, Function(int) onQuantityChanged) {
-    int itemPrice = servicePrices[label] ?? pricePerItem;
+    int itemPrice = servicePrices[label] ?? 0;
 
     return Container(
       padding: EdgeInsets.all(15),

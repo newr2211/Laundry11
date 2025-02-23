@@ -1,5 +1,7 @@
-import 'package:Laundry/pages/detail.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/cart_service.dart';
+import 'detail.dart';  // ใส่ที่อยู่ของ CartService
 
 class Service2 extends StatefulWidget {
   @override
@@ -7,8 +9,6 @@ class Service2 extends StatefulWidget {
 }
 
 class _Service2State extends State<Service2> {
-  int pricePerItem = 0;
-
   Map<String, int> serviceQuantities = {
     "ซักรองเท้า": 0,
     "น้ำหอมรองเท้า": 0,
@@ -24,7 +24,7 @@ class _Service2State extends State<Service2> {
   int get totalPrice {
     return serviceQuantities.entries
         .map(
-            (entry) => entry.value * (servicePrices[entry.key] ?? pricePerItem))
+            (entry) => entry.value * (servicePrices[entry.key] ?? 0))
         .fold(0, (prev, amount) => prev + amount);
   }
 
@@ -40,46 +40,41 @@ class _Service2State extends State<Service2> {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.only(left: 20, top: 60, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Add service sections like "ซักรองเท้า"
-            for (var service in serviceQuantities.keys) ...[
-              if (service == "ซักรองเท้า") ...[
-                // Show "ซักรองเท้า" only once
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("images/44.png", height: 35),
-                    SizedBox(width: 10),
-                    Text("ซักรองเท้า",
-                        style: TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("images/21.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/22.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/23.png", height: 35),
-                    SizedBox(width: 10),
-                    Icon(Icons.add),
-                    SizedBox(width: 10),
-                    Image.asset("images/24.png", height: 35),
-                  ],
-                ),
-                SizedBox(height: 20),
+            // แสดงหัวข้อของบริการ
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("images/77.png", height: 35),
+                SizedBox(width: 10),
+                Text("ซักรองเท้า", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ],
-              // Add switch and quantity selector for other services
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("images/11.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/12.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/13.png", height: 35),
+                SizedBox(width: 10),
+                Icon(Icons.add),
+                SizedBox(width: 10),
+                Image.asset("images/14.png", height: 35),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            for (var service in serviceQuantities.keys) ...[
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
                   serviceQuantities[service] = value ? 1 : 0;
@@ -89,61 +84,48 @@ class _Service2State extends State<Service2> {
                 _buildQuantitySelector(
                     service,
                     serviceQuantities[service]!,
-                    (val) => updateServiceQuantity(
+                        (val) => updateServiceQuantity(
                         service, val - serviceQuantities[service]!)),
-              SizedBox(height: 10),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          // สร้างรายการบริการที่เลือก
-          List<Map<String, dynamic>> selectedServices = [];
-          List<int> selectedPrices = [];
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          onPressed: () {
+            // เพิ่มบริการไปที่ CartService
+            final cart = Provider.of<CartService>(context, listen: false);
 
-          serviceQuantities.forEach((service, quantity) {
-            if (quantity > 0) {
-              selectedServices.add({
-                'service': service, // ชื่อบริการ
-              });
-              selectedPrices.add(servicePrices[service]! * quantity); // ราคา
-            }
-          });
+            serviceQuantities.forEach((service, quantity) {
+              if (quantity > 0) {
+                cart.addItem(service, servicePrices[service]! * quantity);
+              }
+            });
 
-          // นำข้อมูลไปที่หน้า Detail (ใช้ Detail ที่คุณสร้างไว้แล้ว)
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Detail(
-                selectedServices: selectedServices,
-                selectedPrices: selectedPrices,
-                onBack: (List<Map<String, dynamic>> selectedServices,
-                    List<int> selectedPrices) {
-                  // ที่นี่คุณสามารถจัดการข้อมูลที่ได้รับกลับมา
-                  print(selectedServices);
-                  print(selectedPrices);
-                },
-                onAddService: (String service, int price) {},
+            // นำไปที่หน้าจอ Cart
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CartScreen(),
               ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+              style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
-            style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
 
   Widget _buildQuantitySelector(
       String label, int quantity, Function(int) onQuantityChanged) {
-    int itemPrice = servicePrices[label] ?? pricePerItem;
+    int itemPrice = servicePrices[label] ?? 0;
 
     return Container(
       padding: EdgeInsets.all(15),

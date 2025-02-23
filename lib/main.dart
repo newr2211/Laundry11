@@ -3,6 +3,7 @@ import 'package:Laundry/pages/bookinghistory.dart';
 import 'package:Laundry/pages/detail.dart';
 import 'package:Laundry/pages/editprofile.dart';
 import 'package:Laundry/pages/service1.dart';
+import 'package:Laundry/services/cart_service.dart';
 import 'package:Laundry/services/serviceProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:Laundry/pages/booking.dart';
@@ -21,7 +22,7 @@ void main() async {
   );
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ServiceProvider(),
+      create: (context) => CartService(),
       child: MyApp(),
     ),
   );
