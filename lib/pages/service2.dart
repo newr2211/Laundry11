@@ -124,6 +124,7 @@ class _Service2State extends State<Service2> {
                   print(selectedServices);
                   print(selectedPrices);
                 },
+                onAddService: (String service, int price) {},
               ),
             ),
           );

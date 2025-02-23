@@ -2,15 +2,14 @@ import 'package:Laundry/pages/bookinghistory.dart';
 import 'package:Laundry/pages/detail.dart';
 import 'package:Laundry/pages/editprofile.dart';
 import 'package:Laundry/pages/login.dart';
+import 'package:flutter/material.dart';
+import 'package:Laundry/pages/service1.dart';
 import 'package:Laundry/pages/service2.dart';
 import 'package:Laundry/pages/service3.dart';
 import 'package:Laundry/pages/service4.dart';
 import 'package:Laundry/pages/service5.dart';
-import 'package:flutter/material.dart';
-import 'package:Laundry/pages/booking.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:Laundry/pages/service1.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -23,8 +22,6 @@ class _HomeState extends State<Home> {
   String userName = "User";
   bool isLoading = true;
   int _currentIndex = 0;
-  List<Map<String, dynamic>> selectedServices = [];
-  List<int> selectedPrices = [];
 
   @override
   void initState() {
@@ -76,22 +73,6 @@ class _HomeState extends State<Home> {
 
   void onTabTapped(int index) {
     if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Detail(
-            selectedServices: selectedServices,
-            selectedPrices: selectedPrices,
-            onBack: (newSelectedServices, newSelectedPrices) {
-              setState(() {
-                selectedServices = newSelectedServices;
-                selectedPrices = newSelectedPrices;
-              });
-            },
-          ),
-        ),
-      );
-    } else if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => BookingHistory()),
@@ -341,10 +322,6 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'หน้าหลัก',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'รายการที่เลือก',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),

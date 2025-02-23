@@ -34,19 +34,6 @@ class _Service1State extends State<Service1> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // กำหนดค่าจำนวนบริการเป็น 0 ทุกตัวเมื่อเริ่มต้น
-    serviceQuantities = {
-      "ซัก-พับ": 0,
-      "รีดผ้า": 0,
-      "ขจัดคราบ": 0,
-      "ให้ผ้าขาวยิ่งขาว": 0,
-      "ให้ผ้าดำยิ่งดำ": 0,
-      "ให้ยีนส์ยิ่งน้ำเงิน": 0,
-    };
-  }
-
   void updateServiceQuantity(String service, int change) {
     setState(() {
       serviceQuantities[service] =
@@ -120,9 +107,17 @@ class _Service1State extends State<Service1> {
               // เพิ่มสวิตช์และเลือกจำนวนบริการอื่นๆ
               _buildSwitch(service, serviceQuantities[service]! > 0, (value) {
                 setState(() {
-                  serviceQuantities[service] = value ? 1 : 0;
+                  if (value) {
+                    // เพิ่มค่าปัจจุบันเข้าไปแทนที่จะรีเซ็ต
+                    serviceQuantities[service] =
+                        (serviceQuantities[service] ?? 0) + 1;
+                  } else {
+                    // หากไม่เลือก บริการนั้นจะถูกตั้งค่าเป็น 0
+                    serviceQuantities[service] = 0;
+                  }
                 });
               }),
+
               if (serviceQuantities[service]! > 0)
                 _buildQuantitySelector(
                     service,
@@ -162,6 +157,7 @@ class _Service1State extends State<Service1> {
                   print(selectedServices);
                   print(selectedPrices);
                 },
+                onAddService: (String service, int price) {},
               ),
             ),
           );

@@ -125,6 +125,7 @@ class _Service5State extends State<Service5> {
                   print(selectedServices);
                   print(selectedPrices);
                 },
+                onAddService: (String service, int price) {},
               ),
             ),
           );

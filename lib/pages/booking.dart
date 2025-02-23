@@ -5,14 +5,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Booking extends StatefulWidget {
-  final String service, price;
+  final List<Map<String, dynamic>> selectedServices;
+  final List<int> selectedPrices;
+  final int totalPrice;
+
   const Booking({
     super.key,
-    required this.service,
-    required this.price,
-    required List selectedPrices,
-    required List selectedServices,
-    required int totalPrice,
+    required this.selectedServices,
+    required this.selectedPrices,
+    required this.totalPrice,
   });
 
   @override
@@ -25,6 +26,7 @@ class _BookingState extends State<Booking> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
+  // ฟังก์ชันดึงข้อมูลผู้ใช้
   Future<void> getUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -86,14 +88,14 @@ class _BookingState extends State<Booking> {
     }
 
     Map<String, dynamic> userBookingMap = {
-      "Service": widget.service,
-      "Price": widget.price,
+      "Services": widget.selectedServices, // ข้อมูลบริการที่เลือกยังคงอยู่
+      "Prices": widget.selectedPrices, // ข้อมูลราคายังอยู่
+      "TotalPrice": widget.totalPrice, // ยอดรวมยังคงอยู่
       "Date": _selectedDate.toString().split(' ')[0],
       "Time": _selectedTime.format(context),
       "Username": name,
       "Email": email,
-      "AdditionalMessage": additionalMessage ?? '',
-      "DeliveryAddress": deliveryAddress ?? '', // บันทึกที่อยู่ในการจัดส่ง
+      "DeliveryAddress": deliveryAddress ?? '',
     };
 
     try {
@@ -132,9 +134,9 @@ class _BookingState extends State<Booking> {
                   SizedBox(height: 20.0),
                   _buildTimePicker(),
                   SizedBox(height: 20.0),
-                  _buildDeliveryAddressField(), // ช่องใส่ที่อยู่
+                  _buildDeliveryAddressField(),
                   SizedBox(height: 40.0),
-                  _buildBookButton()
+                  _buildBookButton(),
                 ],
               ),
             ),
@@ -237,11 +239,7 @@ class _BookingState extends State<Booking> {
         padding: EdgeInsets.symmetric(vertical: 15.0),
       ),
       child: Center(
-        child: Text("จองเลย!",
-            style: TextStyle(
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
+        child: Text("จองเลย!"),
       ),
     );
   }

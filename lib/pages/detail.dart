@@ -1,8 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:Laundry/pages/service1.dart';
+import 'package:Laundry/pages/service2.dart';
+import 'package:Laundry/pages/service3.dart';
+import 'package:Laundry/pages/service4.dart';
+import 'package:Laundry/pages/service5.dart';
+import 'package:Laundry/pages/booking.dart';
 
-class Detail extends StatelessWidget {
+class Detail extends StatefulWidget {
   final List<Map<String, dynamic>> selectedServices;
   final List<int> selectedPrices;
   final Function(List<Map<String, dynamic>>, List<int>) onBack;
@@ -11,7 +15,31 @@ class Detail extends StatelessWidget {
     required this.selectedServices,
     required this.selectedPrices,
     required this.onBack,
+    required void Function(String service, int price) onAddService,
   });
+
+  @override
+  _DetailState createState() => _DetailState();
+}
+
+class _DetailState extends State<Detail> {
+  late List<Map<String, dynamic>> selectedServices;
+  late List<int> selectedPrices;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedServices = List.from(widget.selectedServices);
+    selectedPrices = List.from(widget.selectedPrices);
+  }
+
+  // ฟังก์ชันเพิ่มบริการใหม่
+  void onAddService(Map<String, dynamic> newService) {
+    setState(() {
+      selectedServices.add({'service': newService['service']});
+      selectedPrices.add(newService['price']);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +56,7 @@ class Detail extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // ส่งข้อมูลกลับไปที่หน้า Home
-            onBack(selectedServices, selectedPrices);
+            widget.onBack(selectedServices, selectedPrices);
             Navigator.pop(context);
           },
         ),
@@ -98,7 +125,17 @@ class Detail extends StatelessWidget {
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                // Code to navigate to the next screen
+                // ส่งข้อมูลที่เลือกไปยังหน้า Booking
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Booking(
+                      selectedServices: selectedServices,
+                      selectedPrices: selectedPrices,
+                      totalPrice: totalPrice, // ส่ง totalPrice เป็น int
+                    ),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
@@ -110,6 +147,101 @@ class Detail extends StatelessWidget {
               child: Center(
                 child: Text(
                   "เลือกเวลาการจอง",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: Text('ซัก-ผับ'),
+                        onTap: () async {
+                          Navigator.pop(context); // ปิด BottomSheet ก่อน
+                          final newService = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Service1()),
+                          );
+                          if (newService != null) {
+                            onAddService(newService);
+                          }
+                        },
+                      ),
+                      ListTile(
+                        title: Text('ซักรองเท้า'),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final newService = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Service2()),
+                          );
+                          if (newService != null) {
+                            onAddService(newService);
+                          }
+                        },
+                      ),
+                      ListTile(
+                        title: Text('รีดเทานั้น'),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final newService = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Service3()),
+                          );
+                          if (newService != null) {
+                            onAddService(newService);
+                          }
+                        },
+                      ),
+                      ListTile(
+                        title: Text('เครื่องนอนและอื่นๆ'),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final newService = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Service4()),
+                          );
+                          if (newService != null) {
+                            onAddService(newService);
+                          }
+                        },
+                      ),
+                      ListTile(
+                        title: Text('ซักชุดสูท'),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final newService = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Service5()),
+                          );
+                          if (newService != null) {
+                            onAddService(newService);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+              ),
+              child: Center(
+                child: Text(
+                  "เลือกบริการเพิ่มเติม",
                   style: TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
