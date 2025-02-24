@@ -1,3 +1,4 @@
+import 'package:Laundry/pages/bottome_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Laundry/pages/home.dart';
@@ -24,7 +25,7 @@ class _OnboardingState extends State<Onboarding> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Home()),
+          MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
       });
     }

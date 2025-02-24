@@ -1,4 +1,5 @@
 import 'package:Laundry/admin/adminhome.dart';
+import 'package:Laundry/pages/bottome_nav_bar.dart';
 import 'package:Laundry/pages/forgot_password.dart';
 import 'package:Laundry/pages/home.dart';
 import 'package:Laundry/pages/signup.dart';
@@ -89,7 +90,7 @@ class _LogInState extends State<LogIn> {
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Home()),
+          MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
       }
     } on FirebaseAuthException catch (e) {

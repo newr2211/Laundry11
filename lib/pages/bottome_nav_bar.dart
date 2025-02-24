@@ -13,12 +13,6 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    Text('หน้าหลัก'),
-    Text('ตะกร้าของฉัน'),
-    Text('ประวัติการจอง'),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;

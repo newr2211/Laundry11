@@ -3,122 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class BookingHistory extends StatelessWidget {
-  const BookingHistory({super.key});
+  const BookingHistory({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
+  void _showBookingDetails(BuildContext context, Map<String, dynamic> booking) {
+    List<Map<String, dynamic>> services = (booking['Services'] as List<dynamic>)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
 
-    if (user == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title:
-              Text("การจองของฉัน", style: TextStyle(color: Colors.blue[700])),
-          backgroundColor: Colors.blue[50],
-        ),
-        body: const Center(
-          child: Text(
-            "กรุณาเข้าสู่ระบบก่อน",
-            style: TextStyle(color: Colors.black, fontSize: 18),
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("ประวัติการจอง", style: TextStyle(color: Colors.blue[700])),
-        backgroundColor: Colors.blue[50],
-        iconTheme: IconThemeData(color: Colors.blue[700]),
-        centerTitle: true,
-      ),
-      body: _buildBookingHistory(context, user),
-    );
-  }
-
-  Widget _buildBookingHistory(BuildContext context, User user) {
-    return Container(
-      color: Colors.blue[50],
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('Bookings')
-            .where('Email', isEqualTo: user.email)
-            .orderBy('Date', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("ไม่มีประวัติการจอง",
-                  style: TextStyle(color: Colors.black, fontSize: 18)),
-            );
-          }
-
-          var bookings = snapshot.data!.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
-              .toList();
-
-          return ListView.builder(
-            itemCount: bookings.length,
-            itemBuilder: (context, index) {
-              var booking = bookings[index];
-
-              List<String> services = (booking['SelectedServices'] != null)
-                  ? List<String>.from(booking['SelectedServices'])
-                  : [booking['Service'] ?? 'ไม่ระบุ'];
-
-              List<String> prices = (booking['SelectedPrices'] != null)
-                  ? List<String>.from(booking['SelectedPrices'])
-                  : [booking['Price'] ?? 'ไม่ระบุ'];
-
-              String? deliveryAddress =
-                  booking['DeliveryAddress'] ?? 'ไม่ระบุที่อยู่';
-
-              return Card(
-                margin:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                color: Colors.white,
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(10),
-                  title: Text(
-                    "วันที่จอง: ${booking['Date']}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("ราคา: ${prices.first}"),
-                      Text("เวลา: ${booking['Time']}"),
-                      Text("ที่อยู่จัดส่ง: $deliveryAddress"),
-                      if (services.length > 1)
-                        const Text(
-                          "...ดูเพิ่มเติม",
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                    ],
-                  ),
-                  trailing: const Icon(Icons.info_outline, color: Colors.blue),
-                  onTap: () {
-                    _showBookingDetails(
-                        context, booking, services, prices, deliveryAddress);
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  void _showBookingDetails(BuildContext context, Map<String, dynamic> booking,
-      List<String> services, List<String> prices, String? deliveryAddress) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -138,11 +29,17 @@ class BookingHistory extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: List.generate(services.length, (index) {
-                    return Text("• ${services[index]} - ${prices[index]}");
+                    var item = services[index];
+                    String serviceName = item['service'] ?? 'ไม่ระบุ';
+                    int quantity = item['quantity'] ?? 1;
+                    int pricePerUnit = item['price'] ?? 0;
+                    int totalPrice = quantity * pricePerUnit;
+
+                    return Text("• $serviceName ($quantity ชิ้น) - ฿$totalPrice");
                   }),
                 ),
                 const SizedBox(height: 10),
-                Text("📍 ที่อยู่จัดส่ง: $deliveryAddress"),
+                Text("📍 ที่อยู่จัดส่ง: ${booking['DeliveryAddress'] ?? 'ไม่ระบุ'}"),
                 const SizedBox(height: 10),
                 Text(
                   "📌 สถานะ: ${booking['Status'] ?? 'รอดำเนินการ'}",
@@ -154,13 +51,73 @@ class BookingHistory extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // ปิดป๊อปอัพ
+                Navigator.of(context).pop();
               },
               child: const Text("ปิด", style: TextStyle(color: Colors.red)),
             ),
           ],
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String userEmail = FirebaseAuth.instance.currentUser?.email ?? "";
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("ประวัติการจอง"),
+        backgroundColor: Colors.blue[700], // สี AppBar
+      ),
+      backgroundColor: Colors.blue[50], // สีพื้นหลังหน้าจอ
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('Bookings')
+            .where('Email', isEqualTo: userEmail) // ใช้ email แทน uid
+            .snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("ไม่มีประวัติการจอง"));
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              final booking = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+
+              return GestureDetector(
+                onTap: (){
+                  _showBookingDetails(context, booking);
+                },
+                child: Card(
+                  color: Colors.white, // สีการ์ด
+                  shadowColor: Colors.blue[700], // เงาของการ์ด
+                  margin: const EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text(
+                      "วันที่จอง: ${booking['Date']}",
+                      style: TextStyle(color: Colors.blue[700]), // เปลี่ยนสีข้อความ
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("ยอดรวม: ฿${booking['TotalPrice']}", style: TextStyle(color: Colors.blue[900])),
+                        Text("เวลา: ${booking['Time']}", style: TextStyle(color: Colors.blueGrey[800])),
+                        Text("ที่อยู่จัดส่ง: ${booking['DeliveryAddress']}"),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           primary: Colors.blue[700]!,
         ),
       ),
-      home: BottomNavBar(),
+      home: Onboarding(),
     );
   }
 }
