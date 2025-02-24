@@ -19,10 +19,44 @@ class _LogInState extends State<LogIn> {
   final _formkey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    checkUserLoggedIn(); // เช็คว่าผู้ใช้ล็อกอินอยู่แล้วหรือไม่
+  }
+
+  @override
   void dispose() {
     emailcontroller.dispose();
     passwordcontroller.dispose();
     super.dispose();
+  }
+
+  Future<void> checkUserLoggedIn() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // มีผู้ใช้ล็อกอินอยู่แล้ว ดึง Role จาก Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+
+      String role = userDoc['Role'] ?? 'user';
+
+      if (!mounted) return;
+
+      // นำทางไปยังหน้าที่เหมาะสม
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminHome()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      }
+    }
   }
 
   Future<void> userLogin() async {
@@ -32,7 +66,7 @@ class _LogInState extends State<LogIn> {
 
       // ล็อกอินผู้ใช้
       UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: mail,
         password: password,
       );
@@ -43,20 +77,19 @@ class _LogInState extends State<LogIn> {
           .doc(userCredential.user!.uid)
           .get();
 
-      String role = userDoc['Role'] ?? 'user'; // ค่าเริ่มต้นเป็น 'user'
+      String role = userDoc['Role'] ?? 'user';
 
-      if (!mounted) return; // ตรวจสอบว่า context ยังใช้ได้
+      if (!mounted) return;
 
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-              builder: (context) => const AdminHome()), // ไปหน้าแอดมิน
+          MaterialPageRoute(builder: (context) => const AdminHome()),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Home()), // ไปหน้าหลัก
+          MaterialPageRoute(builder: (context) => const Home()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -107,7 +140,7 @@ class _LogInState extends State<LogIn> {
           Container(
             padding: const EdgeInsets.all(30.0),
             margin:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height / 4),
+            EdgeInsets.only(top: MediaQuery.of(context).size.height / 4),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(

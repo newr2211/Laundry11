@@ -1,3 +1,4 @@
+import 'package:Laundry/pages/bottome_nav_bar.dart';
 import 'package:Laundry/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -107,7 +108,7 @@ class _BookingState extends State<Booking> {
         backgroundColor: Colors.green,
       ));
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Home()));
+          context, MaterialPageRoute(builder: (context) => BottomNavBar()));
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("เกิดข้อผิดพลาดในการจอง: $error"),
@@ -175,7 +176,7 @@ class _BookingState extends State<Booking> {
           SizedBox(height: 10.0),
           TableCalendar(
             focusedDay: _selectedDate,
-            firstDay: DateTime.utc(2025, 1, 1),
+            firstDay: DateTime.now(),
             lastDay: DateTime.utc(2030, 1, 1),
             selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
             onDaySelected: (day, _) => setState(() => _selectedDate = day),
@@ -244,6 +245,7 @@ class _BookingState extends State<Booking> {
         padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 40.0),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         backgroundColor: Colors.orange,
+        minimumSize: Size(double.infinity, 48),
       ),
       child: Text(
         "จองบริการ",

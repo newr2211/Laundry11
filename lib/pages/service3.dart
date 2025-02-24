@@ -106,17 +106,21 @@ class _Service3State extends State<Service3> {
         padding: const EdgeInsets.all(20.0),
         child: ElevatedButton(
           onPressed: () {
-            // Add selected items to the cart
+            final cart = Provider.of<CartService>(context, listen: false);
+
             serviceQuantities.forEach((service, quantity) {
               if (quantity > 0) {
-                cart.addItem(service, servicePrices[service]! * quantity);
+                cart.addItem(service, servicePrices[service]!, quantity); // ✅ ส่ง quantity ที่ถูกต้อง
               }
             });
 
-            // Navigate to CartScreen
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CartScreen()),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("เพิ่มไปยังตะกร้าสำเร็จ!"),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.green,
+              ),
             );
           },
           style: ElevatedButton.styleFrom(
@@ -124,7 +128,7 @@ class _Service3State extends State<Service3> {
             padding: EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: Text("เพิ่มไปยังตะกร้า - ฿$totalPrice",
+          child: Text("เพิ่มไปยังตะกร้า",
               style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
       ),

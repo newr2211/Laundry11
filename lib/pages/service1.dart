@@ -1,3 +1,4 @@
+import 'package:Laundry/pages/bottome_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/cart_service.dart';
@@ -88,20 +89,20 @@ class _Service1State extends State<Service1> {
         padding: const EdgeInsets.all(20.0),
         child: ElevatedButton(
           onPressed: () {
-            // เพิ่มบริการไปที่ CartService
             final cart = Provider.of<CartService>(context, listen: false);
 
             serviceQuantities.forEach((service, quantity) {
               if (quantity > 0) {
-                cart.addItem(service, servicePrices[service]! * quantity);
+                cart.addItem(service, servicePrices[service]!, quantity); // ✅ ส่ง quantity ที่ถูกต้อง
               }
             });
 
-            // นำไปที่หน้าจอ Cart
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CartScreen(),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("เพิ่มไปยังตะกร้าสำเร็จ!"),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.green,
               ),
             );
           },

@@ -1,5 +1,6 @@
 import 'package:Laundry/admin/adminhome.dart';
 import 'package:Laundry/pages/bookinghistory.dart';
+import 'package:Laundry/pages/bottome_nav_bar.dart';
 import 'package:Laundry/pages/detail.dart';
 import 'package:Laundry/pages/editprofile.dart';
 import 'package:Laundry/pages/service1.dart';
@@ -35,9 +36,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      home: Onboarding(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.light(
+          primary: Colors.blue[700]!,
+        ),
+      ),
+      home: BottomNavBar(),
     );
   }
 }

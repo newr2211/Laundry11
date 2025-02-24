@@ -1,4 +1,5 @@
-import 'package:Laundry/pages/home.dart';
+import 'package:Laundry/pages/bottome_nav_bar.dart';
+import 'package:Laundry/pages/booking.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/cart_service.dart';
@@ -18,12 +19,24 @@ class CartScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => BottomNavBar()),
             );
           },
         ),
+        actions: [
+          if (selectedServices.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                cart.clear();
+              },
+              child: Text(
+                "ยกเลิกทั้งหมด",
+                style: TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(color: Colors.blue[50]),
@@ -47,21 +60,39 @@ class CartScreen extends StatelessWidget {
                   return Card(
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
+                        borderRadius: BorderRadius.circular(10)),
                     child: ListTile(
                       title: Text(
                         selectedServices[index].service,
                         style: TextStyle(fontSize: 18.0, color: Colors.black),
                       ),
-                      trailing: Text(
-                        '${selectedServices[index].price}฿',
-                        style: TextStyle(fontSize: 18.0, color: Colors.black),
+                      subtitle: Text(
+                        "฿${selectedServices[index].price} x ${selectedServices[index].quantity}",
+                        style: TextStyle(fontSize: 16.0, color: Colors.grey[700]),
                       ),
-                      onLongPress: () {
-                        // ลบบริการจากตะกร้า
-                        cart.removeItem(selectedServices[index].service);
-                      },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: selectedServices[index].quantity > 1
+                                ? () => cart.updateQuantity(
+                                selectedServices[index].service,
+                                selectedServices[index].quantity - 1)
+                                : null,
+                          ),
+                          Text(
+                            "${selectedServices[index].quantity}",
+                            style: TextStyle(fontSize: 18.0),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () => cart.updateQuantity(
+                                selectedServices[index].service,
+                                selectedServices[index].quantity + 1),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -90,6 +121,42 @@ class CartScreen extends StatelessWidget {
                 ),
               ],
             ),
+            SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: selectedServices.isNotEmpty
+                  ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Booking(
+                      selectedServices: selectedServices.map((item) => {
+                        "service": item.service,
+                        "quantity": item.quantity,
+                        "price": item.price
+                      }).toList(),
+                      selectedPrices: selectedServices.map((item) => item.price * item.quantity).toList(),
+                      totalPrice: cart.totalPrice,
+                    ),
+                  ),
+                );
+              }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 40.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                backgroundColor: Colors.orange,
+                minimumSize: Size(double.infinity, 48)
+              ),
+              child: Text(
+                "ไปที่การจอง",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(height: 20.0),
           ],
         ),
       ),
